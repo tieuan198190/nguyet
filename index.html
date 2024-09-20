@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Product Availability</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            padding: 10px;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            label {
+                font-size: 1rem;
+            }
+
+            button {
+                padding: 10px;
+                font-size: 1rem;
+            }
+
+            input {
+                padding: 8px;
+                font-size: 1rem;
+            }
+
+            #result {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tìm mã</h1>
+    <label for="productCode">Nhập Mã:</label>
+    <input type="text" id="productCode" placeholder="Ví dụ: N365">
+    <button onclick="searchProduct()">Tìm</button>
+
+    <div id="result">Không Có Số Lượng</div>
+
+    <script>
+        let productData = [];
+
+        // Function to load data from the text file
+        function loadProductData() {
+            fetch('product_data.txt')
+                .then(response => response.text())
+                .then(data => {
+                    const lines = data.split('\n');
+                    lines.forEach(line => {
+                        const [parentCode, size, stock] = line.split(',');
+                        productData.push({ parentCode, size, stock: parseInt(stock, 10) });
+                    });
+                    console.log('Product data loaded:', productData);
+                })
+                .catch(error => console.error('Error loading product data:', error));
+        }
+
+        function searchProduct() {
+            const productCode = document.getElementById('productCode').value.trim().toLowerCase();
+            const resultDiv = document.getElementById('result');
+
+            // Clear previous results
+            resultDiv.innerHTML = '';
+
+            // Filter the product data based on the entered parent code (case-insensitive search)
+            const results = productData.filter(product => product.parentCode.toLowerCase() === productCode);
+
+            if (results.length === 0) {
+                resultDiv.innerHTML = 'Không Có Số Lượng';
+            } else {
+                const availableSizes = results
+                    .filter(product => product.stock > 0)
+                    .map(product => `${product.stock} - ${product.size}`)
+                    .join('<br>'); // Each size will appear on a new line
+
+                if (availableSizes) {
+                    resultDiv.innerHTML = availableSizes;
+                } else {
+                    resultDiv.innerHTML = 'Không có sản phẩm khả dụng cho size này';
+                }
+            }
+        }
+
+        // Load the product data when the page loads
+        window.onload = loadProductData;
+    </script>
+
+</body>
+</html>
