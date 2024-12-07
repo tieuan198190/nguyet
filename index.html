@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Search Product</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <!-- Welcome Page -->
@@ -37,7 +39,7 @@
             <div class="search-container">
                 <input type="text" id="productCode" placeholder="Search">
                 <button class="search-button" onclick="searchProduct()">Tìm</button>
-            </div>
+                <button class="search-button" onclick="printAllSizes()">In</button>
         </div>
     </div>
 
