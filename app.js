@@ -100,11 +100,11 @@ function searchProduct() {
     }
 }
 
-// Hàm in toàn bộ danh sách size
 function printAllSizes() {
     const sizeList = document.querySelectorAll('#size-list p');
     const productCode = document.getElementById('productCode').value.trim().toUpperCase();
 
+    // Tạo nội dung HTML
     let content = `
         <div style="text-align: center; font-family: Arial, sans-serif;">
             <h1 style="font-size: 120px; margin-bottom: 50px;">${productCode}</h1>
@@ -116,22 +116,46 @@ function printAllSizes() {
 
     content += `</div>`;
 
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
+    // Mở tab mới và hiển thị nội dung
+    const newTab = window.open('', '_blank');
+    newTab.document.write(`
         <!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Print Sizes</title>
+            <title>Preview Sizes</title>
+            <style>
+                body {
+                    margin: 0;
+                    padding: 20px;
+                    text-align: center;
+                    font-family: Arial, sans-serif;
+                }
+                h1 {
+                    font-size: 120px;
+                    margin-bottom: 50px;
+                }
+                p {
+                    font-size: 100px;
+                    margin: 20px 0;
+                    line-height: 1.0;
+                }
+                button {
+                    margin-top: 20px;
+                    padding: 10px 20px;
+                    font-size: 20px;
+                    cursor: pointer;
+                }
+            </style>
         </head>
-        <body style="margin: 0; padding: 20px;">
+        <body>
             ${content}
+            <button onclick="window.print()">In Trang Này</button>
         </body>
         </html>
     `);
-    printWindow.document.close();
-    printWindow.print();
+    newTab.document.close(); // Đóng luồng ghi nội dung
 }
 
 // Chuyển từ Welcome Page sang Result Page

@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Search Product</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Thư viện jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Thư viện html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* Tối ưu hiển thị danh sách size */
+        #size-list p {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
     <!-- Welcome Page -->
@@ -39,7 +50,8 @@
             <div class="search-container">
                 <input type="text" id="productCode" placeholder="Search">
                 <button class="search-button" onclick="searchProduct()">Tìm</button>
-                <button class="search-button" onclick="printAllSizes()">In</button>
+                <button class="search-button" onclick="printAllSizes()">In PDF</button>
+            </div>
         </div>
     </div>
 
