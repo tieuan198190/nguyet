@@ -1,0 +1,142 @@
+/* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Toàn bộ trang */
+body, html {
+    height: 100%;
+    width: 100%;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Container chính */
+.result-page {
+    width: 90%;
+    max-width: 800px;
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Hình ảnh sản phẩm */
+.image-container {
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.product-image {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;
+    display: none; /* Ẩn ảnh mặc định */
+}
+
+/* Thông tin sản phẩm */
+.info-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 20px;
+    font-size: 1rem;
+}
+
+.sizes, .location {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sizes p, .location p {
+    margin: 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.sizes p b, .location p b {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* Thanh tìm kiếm */
+.search-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.search-container input {
+    flex: 4;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 30px 0 0 30px;
+    font-size: 1rem;
+    outline: none;
+    color: #333;
+    background-color: #f9f9f9;
+    text-align: left;
+    padding-left: 20px;
+    transition: all 0.3s ease;
+}
+
+.search-container input::placeholder {
+    color: #aaa;
+}
+
+.search-container input:focus {
+    border-color: #007BFF;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+}
+
+/* Nút Tìm kiếm */
+.search-container .search-button {
+    flex: 1;
+    padding: 15px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 0 30px 30px 0;
+    background: linear-gradient(to right, #007bff, #0056b3);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-container .search-button:hover {
+    background: linear-gradient(to right, #0056b3, #007bff);
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .result-page {
+        width: 95%;
+    }
+
+    .info-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .search-container {
+        flex-direction: row;
+        gap: 5px;
+    }
+}

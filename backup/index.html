@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Product</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="result-page">
+        <!-- Phần hiển thị hình ảnh sản phẩm -->
+        <div class="image-container">
+            <img src="" alt="Product Image" id="product-image" class="product-image">
+        </div>
+
+        <!-- Phần thông tin sản phẩm -->
+        <div class="info-container">
+            <div class="sizes" id="size-list">
+                <!-- Danh sách size sẽ được hiển thị tại đây -->
+            </div>
+            <div class="location">
+                <p><b>Vị Trí:</b></p>
+                <p id="location-info">Không có vị trí</p>
+            </div>
+        </div>
+
+        <!-- Thanh tìm kiếm -->
+        <div class="search-container">
+            <input type="text" id="productCode" placeholder="Search">
+            <button class="search-button" onclick="searchProduct()">Tìm Kiếm</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
