@@ -2,10 +2,10 @@ let productData = [];
 let locationData = [];
 let dataLoaded = false;
 
-// Load dữ liệu sản phẩm từ S3
+// Load dữ liệu sản phẩm từ file
 function loadProductData() {
-    const s3FileUrl = "https://productdata198170.s3.ap-southeast-1.amazonaws.com/processed_data.txt";
-    const urlWithTimestamp = `${s3FileUrl}?t=${new Date().getTime()}`;
+    const s3FileUrl = "processed_data.txt"; // Đường dẫn file sản phẩm
+    const urlWithTimestamp = `${s3FileUrl}?t=${new Date().getTime()}`; // Thêm timestamp để tránh cache
 
     return fetch(urlWithTimestamp)
         .then(response => {
@@ -16,15 +16,18 @@ function loadProductData() {
         })
         .then(data => {
             const lines = data.split('\n');
-            productData = [];
+            productData = []; // Xóa dữ liệu cũ để cập nhật mới
             lines.forEach(line => {
-                const [parentCode, size, stock, imageUrl] = line.split(',').map(item => item.trim());
-                productData.push({
-                    parentCode: parentCode.trim(),
-                    size: size.trim(),
-                    stock: parseInt(stock, 10),
-                    imageUrl: imageUrl ? imageUrl.trim() : null
-                });
+                const [parentCode, size, stock, price, imageUrl] = line.split(',').map(item => item.trim());
+                if (parentCode && size && stock && price) {
+                    productData.push({
+                        parentCode: parentCode,
+                        size: size,
+                        stock: parseInt(stock, 10),
+                        price: parseFloat(price), // Lưu giá cho từng sản phẩm (chung cho mọi size)
+                        imageUrl: imageUrl || null
+                    });
+                }
             });
             console.log('Product data loaded:', productData);
         })
@@ -34,30 +37,42 @@ function loadProductData() {
         });
 }
 
-// Load dữ liệu vị trí từ file nội bộ
+// Load dữ liệu vị trí từ file
 function loadLocationData() {
-    return fetch('location.txt')
-        .then(response => response.text())
+    const locationFileUrl = "location.txt"; // Đường dẫn file vị trí
+
+    return fetch(locationFileUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+        })
         .then(data => {
             const lines = data.split('\n');
-            locationData = [];
+            locationData = []; // Xóa dữ liệu cũ
             lines.forEach(line => {
                 const [parentCode, shelf, row] = line.split(',').map(item => item.trim());
-                locationData.push({
-                    parentCode: parentCode.trim(),
-                    shelf: shelf.trim(),
-                    row: row.trim()
-                });
+                if (parentCode && shelf && row) {
+                    locationData.push({
+                        parentCode: parentCode,
+                        shelf: shelf,
+                        row: row
+                    });
+                }
             });
             console.log('Location data loaded:', locationData);
         })
-        .catch(error => console.error('Error loading location data:', error));
+        .catch(error => {
+            console.error('Error loading location data:', error);
+            alert('Không thể tải dữ liệu vị trí. Vui lòng thử lại sau.');
+        });
 }
 
 // Tìm kiếm sản phẩm
 function searchProduct() {
     if (!dataLoaded) {
-        alert("Data is still loading. Please wait.");
+        alert("Dữ liệu chưa được tải. Vui lòng đợi.");
         return;
     }
 
@@ -65,125 +80,63 @@ function searchProduct() {
     const locationDiv = document.getElementById('location-info');
     const sizeList = document.getElementById('size-list');
     const productImage = document.getElementById('product-image');
+    const priceDiv = document.getElementById('product-price');
 
+    // Xóa nội dung cũ
     sizeList.innerHTML = '';
-    locationDiv.innerHTML = '';
+    locationDiv.innerHTML = 'Không có vị trí';
     productImage.style.display = 'none';
+    priceDiv.innerHTML = '';
 
-    const locations = locationData.filter(loc => loc.parentCode.toLowerCase() === productCode);
+    // Lọc dữ liệu sản phẩm
     const results = productData.filter(product => product.parentCode.toLowerCase() === productCode);
 
+    // Hiển thị kết quả
     if (results.length === 0) {
-        alert("SAI MÃ SẢN PHẨM!");
+        alert("Không tìm thấy sản phẩm!");
         return;
     }
 
-    if (locations.length > 0) {
-        const location = locations[locations.length - 1];
-        locationDiv.innerHTML = `${location.shelf.toUpperCase()}, ${location.row.toUpperCase()}`;
-    } else {
-        locationDiv.innerHTML = 'Không Có Vị Trí';
+    // Hiển thị thông tin vị trí
+    const location = locationData.find(loc => loc.parentCode.toLowerCase() === productCode);
+    if (location) {
+        locationDiv.innerHTML = `<b>${location.shelf.toUpperCase()}</b>, <b>${location.row.toUpperCase()}</b>`;
     }
 
+    // Hiển thị giá chung của sản phẩm
+    const productPrice = results[0].price; // Giá sản phẩm theo mã
+    priceDiv.innerHTML = `Giá: <b>${productPrice.toLocaleString('vi-VN')} VND</b>`;
+
+    // Hiển thị size và số lượng
+    let hasStock = false;
     results.forEach(product => {
         if (product.stock > 0) {
-            const sizeItem = document.createElement('p');
-            sizeItem.textContent = `${product.stock} ${product.size}`;
-            sizeList.appendChild(sizeItem);
+            sizeList.innerHTML += `<p><b>${product.stock} </b> ${product.size}`;
+            hasStock = true;
         }
     });
+    
+    if (!hasStock) {
+        sizeList.innerHTML = '<p>Hết hàng</p>';
+    }
 
-    const imageUrl = results.find(product => product.imageUrl)?.imageUrl || null;
+    // Hiển thị hình ảnh sản phẩm
+    const imageUrl = results[0].imageUrl || null;
     if (imageUrl) {
         productImage.src = imageUrl;
         productImage.style.display = 'block';
     }
 }
 
-function printAllSizes() {
-    const sizeList = document.querySelectorAll('#size-list p');
-    const productCode = document.getElementById('productCode').value.trim().toUpperCase();
-
-    // Tạo nội dung HTML
-    let content = `
-        <div style="text-align: center; font-family: Arial, sans-serif;">
-            <h1 style="font-size: 120px; margin-bottom: 50px;">${productCode}</h1>
-    `;
-
-    sizeList.forEach(item => {
-        content += `<p style="font-size: 100px; margin: 20px 0; line-height: 1.0;">${item.textContent}</p>`;
-    });
-
-    content += `</div>`;
-
-    // Mở tab mới và hiển thị nội dung
-    const newTab = window.open('', '_blank');
-    newTab.document.write(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Preview Sizes</title>
-            <style>
-                body {
-                    margin: 0;
-                    padding: 20px;
-                    text-align: center;
-                    font-family: Arial, sans-serif;
-                }
-                h1 {
-                    font-size: 120px;
-                    margin-bottom: 50px;
-                }
-                p {
-                    font-size: 100px;
-                    margin: 20px 0;
-                    line-height: 1.0;
-                }
-                button {
-                    margin-top: 20px;
-                    padding: 10px 20px;
-                    font-size: 20px;
-                    cursor: pointer;
-                }
-            </style>
-        </head>
-        <body>
-            ${content}
-            <button onclick="window.print()">In Trang Này</button>
-        </body>
-        </html>
-    `);
-    newTab.document.close(); // Đóng luồng ghi nội dung
-}
-
-// Chuyển từ Welcome Page sang Result Page
-function goToResultPage() {
-    const welcomeProductCode = document.getElementById('welcomeProductCode').value.trim();
-    if (welcomeProductCode) {
-        document.getElementById('productCode').value = welcomeProductCode;
-        document.getElementById('welcome-page').style.display = 'none';
-        document.getElementById('result-page').style.display = 'block';
-        searchProduct();
-    } else {
-        alert("Vui lòng nhập mã sản phẩm!");
-    }
-}
-
 // Khi trang được tải
-window.onload = function () {
+window.onload = function() {
     Promise.all([loadProductData(), loadLocationData()])
         .then(() => {
             console.log('Both data files have been loaded');
             dataLoaded = true;
-
-            // Thêm sự kiện click vào div.sizes
-            const sizesDiv = document.querySelector('.sizes');
-            sizesDiv.addEventListener('click', printAllSizes);
         })
         .catch(error => {
             console.error('Error loading data:', error);
-            alert('There was an error loading the data files. Please try again later.');
+            alert('Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.');
         });
 };

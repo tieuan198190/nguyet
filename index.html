@@ -5,56 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Search Product</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Thư viện jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Thư viện html2canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        /* Tối ưu hiển thị danh sách size */
-        #size-list p {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #333;
-        }
-    </style>
 </head>
 <body>
     <!-- Welcome Page -->
     <div class="welcome-page" id="welcome-page">
+        <!-- Logo -->
         <div class="logo-container">
             <img src="comap_logo.jpg" alt="CÔ MẬP FASHION NÈ" class="logo">
         </div>
+
+        <!-- Thanh tìm kiếm -->
         <div class="search-container">
-            <input type="text" id="welcomeProductCode" placeholder="Search">
+            <input type="text" id="welcomeProductCode" placeholder="Nhập mã sản phẩm">
             <button class="search-button" onclick="goToResultPage()">Tìm</button>
         </div>
     </div>
 
     <!-- Result Page -->
     <div class="result-page" id="result-page" style="display: none;">
+        <!-- Phần hiển thị hình ảnh sản phẩm -->
         <div class="image-container">
             <img src="" alt="Product Image" id="product-image" class="product-image">
         </div>
-        <div class="details-container">
-            <div class="info-container">
-                <div class="sizes" id="sizes">
-                    <ul id="size-list" class="size-list">
-                        <!-- Danh sách size sẽ được hiển thị tại đây -->
-                    </ul>
-                </div>
-                <div class="location">
-                    <p><span id="location-info">Không có vị trí</span></p>
-                </div>
+
+        <!-- Phần thông tin sản phẩm -->
+        <div class="info-container">
+            <div class="sizes">
+                <ul id="size-list" class="size-list">
+                    <!-- Danh sách size sẽ được hiển thị tại đây -->
+                </ul>
             </div>
-            <div class="search-container">
-                <input type="text" id="productCode" placeholder="Search">
-                <button class="search-button" onclick="searchProduct()">Tìm</button>
-                <button class="search-button" onclick="printAllSizes()">In PDF</button>
+            <div class="price">
+                <p id="product-price">Không có giá</p>
             </div>
+            <div class="location">
+                <p id="location-info">Không có vị trí</p>
+            </div>
+        </div>
+        
+
+        <!-- Thanh tìm kiếm lại -->
+        <div class="search-container">
+            <input type="text" id="productCode" placeholder="Nhập mã sản phẩm khác">
+            <button class="search-button" onclick="searchProduct()">Tìm</button>
         </div>
     </div>
 
+    <script>
+        // Chuyển từ Welcome Page sang Result Page
+        function goToResultPage() {
+            const welcomeProductCode = document.getElementById('welcomeProductCode').value.trim();
+            if (welcomeProductCode) {
+                document.getElementById('productCode').value = welcomeProductCode;
+                document.getElementById('welcome-page').style.display = 'none';
+                document.getElementById('result-page').style.display = 'block';
+                searchProduct();
+            } else {
+                alert("Vui lòng nhập mã sản phẩm!");
+            }
+        }
+    </script>
     <script src="app.js"></script>
 </body>
 </html>
