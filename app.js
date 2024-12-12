@@ -4,7 +4,7 @@ let dataLoaded = false;
 
 // Load dữ liệu sản phẩm từ file
 function loadProductData() {
-    const s3FileUrl = "processed_data.txt"; // Đường dẫn file sản phẩm
+    const s3FileUrl = "https://productdata19971998.s3.ap-southeast-1.amazonaws.com/processed_data.txt";
     const urlWithTimestamp = `${s3FileUrl}?t=${new Date().getTime()}`; // Thêm timestamp để tránh cache
 
     return fetch(urlWithTimestamp)
