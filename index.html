@@ -1,96 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Search Product</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Search Product</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Welcome Page -->
-    <div class="welcome-page" id="welcome-page">
-        <!-- Logo -->
-        <div class="logo-container">
-            <img src="comap_logo.jpg" alt="CÔ MẬP FASHION NÈ" class="logo">
-        </div>
-
-        <!-- Thanh tìm kiếm -->
-        <div class="search-container">
-            <input type="text" id="welcomeProductCode" placeholder="Nhập mã sản phẩm">
-            <button class="search-button" onclick="goToResultPage()">Tìm</button>
-        </div>
+  <!-- Welcome Page -->
+  <div class="welcome-page" id="welcome-page">
+    <!-- Logo -->
+    <div class="logo-container">
+      <img src="comap_logo.jpg" alt="CÔ MẬP FASHION NÈ" class="logo">
     </div>
 
-    <!-- Result Page -->
-    <div class="result-page" id="result-page" style="display: none;">
-        <!-- Phần hiển thị hình ảnh sản phẩm -->
-        <div class="image-container">
-            <img src="" alt="Product Image" id="product-image" class="product-image">
-        </div>
+    <!-- Thanh tìm kiếm -->
+    <div class="search-container">
+      <input type="text" id="welcomeProductCode" placeholder="Nhập mã sản phẩm">
+      <button class="search-button" onclick="goToResultPage()">Tìm</button>
+    </div>
+  </div>
 
-        <!-- Phần thông tin sản phẩm -->
-        <div class="info-container">
-            <div class="sizes">
-                <ul id="size-list" class="size-list">
-                    <!-- Danh sách size sẽ được hiển thị tại đây -->
-                </ul>
-            </div>
-            <div class="price">
-                <p id="product-price">Không có giá</p>
-            </div>
-            <div class="location">
-                <p id="location-info">Không có vị trí</p>
-            </div>
-        </div>
+  <!-- Result Page -->
+  <div class="result-page" id="result-page" style="display: none;">
+    <!-- Phần hiển thị hình ảnh sản phẩm -->
+    <div class="image-container">
+      <img src="" alt="Product Image" id="product-image" class="product-image">
+    </div>
+
+    <!-- Phần thông tin sản phẩm -->
+    <div class="info-container">
+      <div class="sizes">
+        <ul id="size-list" class="size-list">
+          <!-- Danh sách size sẽ được hiển thị tại đây -->
+        </ul>
+      </div>
+      <div class="price">
+        <p id="product-price">Không có giá</p>
+      </div>
+      <div class="location">
+        <p id="location-info">Không có vị trí</p>
+      </div>
+    </div>
         
-        <!-- Thanh tìm kiếm lại -->
-        <div class="search-container">
-            <input type="text" id="productCode" placeholder="Nhập mã sản phẩm khác">
-            <button class="search-button" onclick="searchProduct()">Tìm</button>
-        </div>
+    <!-- Thanh tìm kiếm lại -->
+    <div class="search-container">
+      <input type="text" id="productCode" placeholder="Nhập mã sản phẩm khác">
+      <button class="search-button" onclick="searchProduct()">Tìm</button>
     </div>
+  </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let inputField = document.getElementById("productCode");
-            let searchButton = document.querySelector(".search-button");
+  <!-- Script xử lý tự động chuyển trang khi quét mã ở welcome page và ở result page -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Thiết lập cho input của trang kết quả (result page)
+      let productInput = document.getElementById("productCode");
+      let searchButton = document.querySelector(".search-button");
 
-            inputField.addEventListener("keypress", function (event) {
-                if (event.key === "Enter") { 
-                    event.preventDefault();
-                    searchButton.click();
-                }
-            });
-
-            let timeout = null;
-            inputField.addEventListener("input", function () {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    searchButton.click();
-                }, 500);
-            });
-
-            searchButton.addEventListener("click", function () {
-                setTimeout(() => {
-                    inputField.value = "";
-                    inputField.focus();
-                }, 500);
-            });
-        });
-
-        function goToResultPage() {
-            const welcomeProductCode = document.getElementById('welcomeProductCode').value.trim();
-            if (welcomeProductCode) {
-                document.getElementById('productCode').value = welcomeProductCode;
-                document.getElementById('welcome-page').style.display = 'none';
-                document.getElementById('result-page').style.display = 'block';
-                searchProduct();
-            } else {
-                alert("Vui lòng nhập mã sản phẩm!");
-            }
+      productInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") { 
+          event.preventDefault();
+          searchButton.click();
         }
-    </script>
+      });
 
-    <script src="app.js"></script>
+      let timeout = null;
+      productInput.addEventListener("input", function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          searchButton.click();
+        }, 500);
+      });
+
+      searchButton.addEventListener("click", function () {
+        setTimeout(() => {
+          productInput.value = "";
+          productInput.focus();
+        }, 500);
+      });
+
+      // Thiết lập cho input của trang chào (welcome page)
+      let welcomeInput = document.getElementById("welcomeProductCode");
+      welcomeInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          goToResultPage();
+        }
+      });
+      let welcomeTimeout = null;
+      welcomeInput.addEventListener("input", function() {
+        clearTimeout(welcomeTimeout);
+        welcomeTimeout = setTimeout(() => {
+          if (welcomeInput.value.trim() !== "") {
+            goToResultPage();
+          }
+        }, 500);
+      });
+    });
+
+    // Hàm chuyển từ trang chào sang trang kết quả và tìm kiếm sản phẩm
+    function goToResultPage() {
+      const welcomeProductCode = document.getElementById('welcomeProductCode').value.trim();
+      if (welcomeProductCode) {
+        document.getElementById('productCode').value = welcomeProductCode;
+        document.getElementById('welcome-page').style.display = 'none';
+        document.getElementById('result-page').style.display = 'block';
+        searchProduct();
+      } else {
+        alert("Vui lòng nhập mã sản phẩm!");
+      }
+    }
+  </script>
+
+  <script src="app.js"></script>
 </body>
 </html>
