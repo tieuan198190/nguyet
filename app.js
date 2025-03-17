@@ -69,14 +69,15 @@ function loadLocationData() {
         });
 }
 
-// Tìm kiếm sản phẩm
+// Tìm kiếm sản phẩm và hiển thị kết quả
 function searchProduct() {
     if (!dataLoaded) {
         alert("Đang tải dữ liệu. Đợi 5-10s đi!");
         return;
     }
 
-    const productCode = document.getElementById('productCode').value.trim().toLowerCase();
+    const inputField = document.getElementById('productCode');
+    const productCode = inputField.value.trim().toLowerCase();
     const locationDiv = document.getElementById('location-info');
     const sizeList = document.getElementById('size-list');
     const productImage = document.getElementById('product-image');
@@ -88,52 +89,73 @@ function searchProduct() {
     productImage.style.display = 'none';
     priceDiv.innerHTML = '';
 
-    // Lọc dữ liệu sản phẩm
+    // Lọc dữ liệu sản phẩm theo mã
     const results = productData.filter(product => product.parentCode.toLowerCase() === productCode);
 
-    // Hiển thị kết quả
     if (results.length === 0) {
         alert("Sai Mã Sản Phẩm!");
+        // Sau khi cảnh báo, xóa input và focus lại để quét tiếp
+        setTimeout(() => {
+            inputField.value = "";
+            inputField.focus();
+        }, 500);
         return;
     }
 
-    // Hiển thị thông tin vị trí
+    // Hiển thị thông tin vị trí nếu có
     const location = locationData.find(loc => loc.parentCode.toLowerCase() === productCode);
     if (location) {
         locationDiv.innerHTML = `<b>${location.shelf.toUpperCase()}</b><br><b>${location.row.toUpperCase()}</b>`;
     }
 
     // Hiển thị giá chung của sản phẩm
-    const productPrice = results[0].price; // Giá sản phẩm theo mã
+    const productPrice = results[0].price;
     priceDiv.innerHTML = `Giá: <b>${productPrice.toLocaleString('vi-VN')} VND</b>`;
 
-    // Hiển thị size và số lượng
+    // Hiển thị size và số lượng có sẵn
     let hasStock = false;
     results.forEach(product => {
         if (product.stock > 0) {
-            sizeList.innerHTML += `<p><b>${product.stock} </b> ${product.size}`;
+            sizeList.innerHTML += `<p><b>${product.stock}</b> ${product.size}</p>`;
             hasStock = true;
         }
     });
-    
     if (!hasStock) {
         sizeList.innerHTML = '<p>Hết hàng</p>';
     }
 
-    // Hiển thị hình ảnh sản phẩm
+    // Hiển thị hình ảnh sản phẩm nếu có
     const imageUrl = results[0].imageUrl || null;
     if (imageUrl) {
         productImage.src = imageUrl;
         productImage.style.display = 'block';
     }
+
+    // Sau khi xử lý, xóa input và focus lại để sẵn sàng quét mã mới
+    setTimeout(() => {
+        inputField.value = "";
+        inputField.focus();
+    }, 500);
 }
 
-// Khi trang được tải
+// Khi trang được tải, load dữ liệu sản phẩm và vị trí,
+// đồng thời thêm sự kiện tự động tìm kiếm khi quét mã (với debounce 500ms)
 window.onload = function() {
     Promise.all([loadProductData(), loadLocationData()])
         .then(() => {
             console.log('Both data files have been loaded');
             dataLoaded = true;
+
+            const inputField = document.getElementById('productCode');
+            let debounceTimeout = null;
+            inputField.addEventListener("input", function() {
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => {
+                    if (inputField.value.trim() !== "") {
+                        searchProduct();
+                    }
+                }, 500); // Chờ 500ms sau khi nhập để tự động tìm kiếm
+            });
         })
         .catch(error => {
             console.error('Error loading data:', error);
