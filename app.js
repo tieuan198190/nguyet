@@ -2,7 +2,7 @@ let productData = [];
 let locationData = [];
 let dataLoaded = false;
 
-// Load dữ liệu sản phẩm
+// Load dữ liệu sản phẩm từ file
 function loadProductData() {
   const s3FileUrl = "https://productdata19971998.s3.ap-southeast-1.amazonaws.com/processed_new.txt"; // Đường dẫn file sản phẩm
   const urlWithTimestamp = `${s3FileUrl}?t=${new Date().getTime()}`; // Thêm timestamp để tránh cache
@@ -24,7 +24,7 @@ function loadProductData() {
             parentCode: parentCode,
             size: size,
             stock: parseInt(stock, 10),
-            price: parseFloat(price), // Lưu giá cho từng sản phẩm (chung cho mọi size)
+            price: parseFloat(price), // Lưu giá chung cho sản phẩm
             imageUrl: imageUrl || null
           });
         }
@@ -37,7 +37,7 @@ function loadProductData() {
     });
 }
 
-// Load dữ liệu vị trí
+// Load dữ liệu vị trí từ file
 function loadLocationData() {
   const locationFileUrl = "location.txt"; // Đường dẫn file vị trí
 
@@ -69,7 +69,7 @@ function loadLocationData() {
     });
 }
 
-// Tìm kiếm sản phẩm
+// Tìm kiếm sản phẩm và hiển thị kết quả
 function searchProduct() {
   if (!dataLoaded) {
     alert("Đang tải dữ liệu. Đợi 5-10s đi!");
@@ -89,13 +89,11 @@ function searchProduct() {
   productImage.style.display = 'none';
   priceDiv.innerHTML = '';
 
-  // Lọc dữ liệu sản phẩm
+  // Lọc dữ liệu sản phẩm theo mã
   const results = productData.filter(product => product.parentCode.toLowerCase() === productCode);
 
-  // Nếu không tìm thấy
   if (results.length === 0) {
     alert("Sai Mã Sản Phẩm!");
-    // Sau khi cảnh báo, xóa input & focus để quét tiếp
     setTimeout(() => {
       inputField.value = "";
       inputField.focus();
@@ -103,17 +101,17 @@ function searchProduct() {
     return;
   }
 
-  // Hiển thị vị trí
+  // Hiển thị thông tin vị trí (nếu có)
   const location = locationData.find(loc => loc.parentCode.toLowerCase() === productCode);
   if (location) {
     locationDiv.innerHTML = `<b>${location.shelf.toUpperCase()}</b><br><b>${location.row.toUpperCase()}</b>`;
   }
 
-  // Hiển thị giá
+  // Hiển thị giá chung của sản phẩm
   const productPrice = results[0].price;
   priceDiv.innerHTML = `Giá: <b>${productPrice.toLocaleString('vi-VN')} VND</b>`;
 
-  // Hiển thị size & số lượng
+  // Hiển thị size và số lượng sản phẩm
   let hasStock = false;
   results.forEach(product => {
     if (product.stock > 0) {
@@ -125,43 +123,42 @@ function searchProduct() {
     sizeList.innerHTML = '<p>Hết hàng</p>';
   }
 
-  // Hiển thị hình ảnh
+  // Hiển thị hình ảnh sản phẩm nếu có
   const imageUrl = results[0].imageUrl || null;
   if (imageUrl) {
     productImage.src = imageUrl;
     productImage.style.display = 'block';
   }
 
-  // Xóa input & focus lại để sẵn sàng quét mã tiếp
+  // Xóa input & focus lại để sẵn sàng quét mã mới
   setTimeout(() => {
     inputField.value = "";
     inputField.focus();
   }, 500);
 }
 
-// Khi trang được tải
+// Khi trang được tải, load dữ liệu và thiết lập sự kiện tự động tìm kiếm ở Result Page
 window.onload = function() {
   Promise.all([loadProductData(), loadLocationData()])
     .then(() => {
       console.log('Both data files have been loaded');
       dataLoaded = true;
 
-      // 2) Tự động tìm khi quét ở Result Page
       const productInput = document.getElementById('productCode');
-      let timeout = null;
+      let debounceTimeout = null;
 
-      // Bắt phím Enter
-      productInput.addEventListener("keydown", function (event) {
+      // Bắt sự kiện keydown (Enter) để gọi searchProduct()
+      productInput.addEventListener("keydown", function(event) {
         if (event.key === "Enter") {
           event.preventDefault();
           searchProduct();
         }
       });
 
-      // Debounce 500ms khi máy quét không gửi Enter
+      // Sự kiện input với debounce 500ms (nếu máy quét không gửi Enter)
       productInput.addEventListener("input", function() {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => {
           if (productInput.value.trim() !== "") {
             searchProduct();
           }
