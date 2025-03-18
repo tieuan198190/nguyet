@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Search Product</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Auto refresh sau 10 phút (600000 ms) -->
+  <script>
+    setInterval(() => {
+      window.location.reload();
+    }, 600000);
+  </script>
 </head>
 <body>
   <!-- Welcome Page -->
@@ -13,7 +19,6 @@
     <div class="logo-container">
       <img src="comap_logo.jpg" alt="CÔ MẬP FASHION NÈ" class="logo">
     </div>
-
     <!-- Thanh tìm kiếm -->
     <div class="search-container">
       <input type="text" id="welcomeProductCode" placeholder="Nhập mã sản phẩm">
@@ -27,7 +32,6 @@
     <div class="image-container">
       <img src="" alt="Product Image" id="product-image" class="product-image">
     </div>
-
     <!-- Phần thông tin sản phẩm -->
     <div class="info-container">
       <div class="sizes">
@@ -42,7 +46,6 @@
         <p id="location-info">Không có vị trí</p>
       </div>
     </div>
-
     <!-- Thanh tìm kiếm lại -->
     <div class="search-container">
       <input type="text" id="productCode" placeholder="Nhập mã sản phẩm khác">
@@ -50,9 +53,34 @@
     </div>
   </div>
 
-  <!-- Script chuyển trang & tự động gọi search ở cả 2 trang -->
+  <!-- Script xử lý Welcome Page: tự động focus và chuyển trang khi quét mã -->
   <script>
-    // Chuyển từ Welcome Page sang Result Page
+    document.addEventListener("DOMContentLoaded", function () {
+      // Tự động focus vào ô nhập mã trên Welcome Page khi load trang
+      const welcomeInput = document.getElementById("welcomeProductCode");
+      welcomeInput.focus();
+
+      // Bắt phím Enter ở Welcome Page
+      welcomeInput.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          goToResultPage();
+        }
+      });
+
+      // Nếu máy quét không gửi Enter, dùng debounce 500ms để tự chuyển trang
+      let welcomeTimeout = null;
+      welcomeInput.addEventListener("input", function () {
+        clearTimeout(welcomeTimeout);
+        welcomeTimeout = setTimeout(() => {
+          if (welcomeInput.value.trim() !== "") {
+            goToResultPage();
+          }
+        }, 500);
+      });
+    });
+
+    // Hàm chuyển từ Welcome Page sang Result Page và gọi tìm kiếm
     function goToResultPage() {
       const welcomeProductCode = document.getElementById('welcomeProductCode').value.trim();
       if (welcomeProductCode) {
@@ -64,30 +92,6 @@
         alert("Vui lòng nhập mã sản phẩm!");
       }
     }
-
-    document.addEventListener("DOMContentLoaded", function () {
-      // 1) Tự động chuyển trang khi quét ở Welcome Page
-      const welcomeInput = document.getElementById("welcomeProductCode");
-      let welcomeTimeout = null;
-
-      // Bắt phím Enter ở Welcome Page
-      welcomeInput.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          goToResultPage();
-        }
-      });
-
-      // Debounce 500ms nếu máy quét không gửi Enter
-      welcomeInput.addEventListener("input", function () {
-        clearTimeout(welcomeTimeout);
-        welcomeTimeout = setTimeout(() => {
-          if (welcomeInput.value.trim() !== "") {
-            goToResultPage();
-          }
-        }, 500);
-      });
-    });
   </script>
 
   <!-- Nạp file JS chính -->
