@@ -42,7 +42,7 @@
         <p id="location-info">Không có vị trí</p>
       </div>
     </div>
-        
+
     <!-- Thanh tìm kiếm lại -->
     <div class="search-container">
       <input type="text" id="productCode" placeholder="Nhập mã sản phẩm khác">
@@ -50,55 +50,9 @@
     </div>
   </div>
 
-  <!-- Script xử lý tự động chuyển trang khi quét mã ở welcome page và ở result page -->
+  <!-- Script chuyển trang & tự động gọi search ở cả 2 trang -->
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      // Thiết lập cho input của trang kết quả (result page)
-      let productInput = document.getElementById("productCode");
-      let searchButton = document.querySelector(".search-button");
-
-      productInput.addEventListener("keypress", function (event) {
-        if (event.key === "Enter") { 
-          event.preventDefault();
-          searchButton.click();
-        }
-      });
-
-      let timeout = null;
-      productInput.addEventListener("input", function () {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          searchButton.click();
-        }, 500);
-      });
-
-      searchButton.addEventListener("click", function () {
-        setTimeout(() => {
-          productInput.value = "";
-          productInput.focus();
-        }, 500);
-      });
-
-      // Thiết lập cho input của trang chào (welcome page)
-      let welcomeInput = document.getElementById("welcomeProductCode");
-      welcomeInput.addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          goToResultPage();
-        }
-      });
-      let welcomeTimeout = null;
-      welcomeInput.addEventListener("input", function() {
-        clearTimeout(welcomeTimeout);
-        welcomeTimeout = setTimeout(() => {
-          if (welcomeInput.value.trim() !== "") {
-            goToResultPage();
-          }
-        }, 500);
-      });
-    });
-
-    // Hàm chuyển từ trang chào sang trang kết quả và tìm kiếm sản phẩm
+    // Chuyển từ Welcome Page sang Result Page
     function goToResultPage() {
       const welcomeProductCode = document.getElementById('welcomeProductCode').value.trim();
       if (welcomeProductCode) {
@@ -110,8 +64,33 @@
         alert("Vui lòng nhập mã sản phẩm!");
       }
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      // 1) Tự động chuyển trang khi quét ở Welcome Page
+      const welcomeInput = document.getElementById("welcomeProductCode");
+      let welcomeTimeout = null;
+
+      // Bắt phím Enter ở Welcome Page
+      welcomeInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          goToResultPage();
+        }
+      });
+
+      // Debounce 500ms nếu máy quét không gửi Enter
+      welcomeInput.addEventListener("input", function () {
+        clearTimeout(welcomeTimeout);
+        welcomeTimeout = setTimeout(() => {
+          if (welcomeInput.value.trim() !== "") {
+            goToResultPage();
+          }
+        }, 500);
+      });
+    });
   </script>
 
+  <!-- Nạp file JS chính -->
   <script src="app.js"></script>
 </body>
 </html>
