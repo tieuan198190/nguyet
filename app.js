@@ -2,7 +2,7 @@ let productData = [];
 let locationData = [];
 let dataLoaded = false;
 
-// Load dữ liệu sản phẩm từ file
+// Load dữ liệu sản phẩm
 function loadProductData() {
   const s3FileUrl = "https://productdata19971998.s3.ap-southeast-1.amazonaws.com/processed_new.txt"; // Đường dẫn file sản phẩm
   const urlWithTimestamp = `${s3FileUrl}?t=${new Date().getTime()}`; // Thêm timestamp để tránh cache
@@ -37,7 +37,7 @@ function loadProductData() {
     });
 }
 
-// Load dữ liệu vị trí từ file
+// Load dữ liệu vị trí
 function loadLocationData() {
   const locationFileUrl = "location.txt"; // Đường dẫn file vị trí
 
@@ -69,7 +69,7 @@ function loadLocationData() {
     });
 }
 
-// Tìm kiếm sản phẩm và hiển thị kết quả
+// Tìm kiếm sản phẩm
 function searchProduct() {
   if (!dataLoaded) {
     alert("Đang tải dữ liệu. Đợi 5-10s đi!");
@@ -89,12 +89,13 @@ function searchProduct() {
   productImage.style.display = 'none';
   priceDiv.innerHTML = '';
 
-  // Lọc dữ liệu sản phẩm theo mã
+  // Lọc dữ liệu sản phẩm
   const results = productData.filter(product => product.parentCode.toLowerCase() === productCode);
 
+  // Nếu không tìm thấy
   if (results.length === 0) {
     alert("Sai Mã Sản Phẩm!");
-    // Sau khi cảnh báo, xóa input và focus lại để quét tiếp
+    // Sau khi cảnh báo, xóa input & focus để quét tiếp
     setTimeout(() => {
       inputField.value = "";
       inputField.focus();
@@ -102,17 +103,17 @@ function searchProduct() {
     return;
   }
 
-  // Hiển thị thông tin vị trí nếu có
+  // Hiển thị vị trí
   const location = locationData.find(loc => loc.parentCode.toLowerCase() === productCode);
   if (location) {
     locationDiv.innerHTML = `<b>${location.shelf.toUpperCase()}</b><br><b>${location.row.toUpperCase()}</b>`;
   }
 
-  // Hiển thị giá chung của sản phẩm
+  // Hiển thị giá
   const productPrice = results[0].price;
   priceDiv.innerHTML = `Giá: <b>${productPrice.toLocaleString('vi-VN')} VND</b>`;
 
-  // Hiển thị size và số lượng có sẵn
+  // Hiển thị size & số lượng
   let hasStock = false;
   results.forEach(product => {
     if (product.stock > 0) {
@@ -124,34 +125,44 @@ function searchProduct() {
     sizeList.innerHTML = '<p>Hết hàng</p>';
   }
 
-  // Hiển thị hình ảnh sản phẩm nếu có
+  // Hiển thị hình ảnh
   const imageUrl = results[0].imageUrl || null;
   if (imageUrl) {
     productImage.src = imageUrl;
     productImage.style.display = 'block';
   }
 
-  // Sau khi xử lý, xóa input và focus lại để sẵn sàng quét mã mới
+  // Xóa input & focus lại để sẵn sàng quét mã tiếp
   setTimeout(() => {
     inputField.value = "";
     inputField.focus();
   }, 500);
 }
 
-// Khi trang được tải, load dữ liệu sản phẩm và vị trí,
-// đồng thời thêm sự kiện tự động tìm kiếm khi quét mã (với debounce 500ms)
+// Khi trang được tải
 window.onload = function() {
   Promise.all([loadProductData(), loadLocationData()])
     .then(() => {
       console.log('Both data files have been loaded');
       dataLoaded = true;
 
-      const inputField = document.getElementById('productCode');
-      let debounceTimeout = null;
-      inputField.addEventListener("input", function() {
-        clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(() => {
-          if (inputField.value.trim() !== "") {
+      // 2) Tự động tìm khi quét ở Result Page
+      const productInput = document.getElementById('productCode');
+      let timeout = null;
+
+      // Bắt phím Enter
+      productInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          searchProduct();
+        }
+      });
+
+      // Debounce 500ms khi máy quét không gửi Enter
+      productInput.addEventListener("input", function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          if (productInput.value.trim() !== "") {
             searchProduct();
           }
         }, 500);
