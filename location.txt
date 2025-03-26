@@ -720,3 +720,12 @@ N4, Chất Liệu: , Ren Cotton Thêu
 N3, Chất Liệu: , Ren Đa Tầng
 N2, Chất Liệu: , Ren Đa Tầng
 N1, Chất Liệu: , Ren Cotton Thêu
+N789, Chất Liệu: , Ren Tổ Yến  
+N788, Chất Liệu: , Ren Đa Tầng  
+N787, Chất Liệu: , Ren Đa Tầng  
+N786, Chất Liệu: , Ren Tổ Yến  
+N785, Chất Liệu: , Ren Bông Tuyết  
+N784, Chất Liệu: , Ren Bông Tuyết  
+N783, Chất Liệu: , Ren Tổ Yến  
+N782, Chất Liệu: , Ren Bông Tuyết  
+
