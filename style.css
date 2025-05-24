@@ -14,9 +14,10 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px; /* Thêm padding để tránh nội dung chạm sát viền */
 }
 
-/* Welcome Page */
+/* Welcome Page (Nếu bạn có) */
 .welcome-page {
     width: 90%;
     max-width: 600px;
@@ -42,14 +43,21 @@ body, html {
     object-fit: contain;
 }
 
-/* Thanh tìm kiếm */
+/* Thanh tìm kiếm chung */
 .search-container {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
     width: 100%;
+    margin-top: 20px; /* Thêm khoảng cách phía trên thanh tìm kiếm trong result page */
 }
+/* CSS riêng cho search-container của welcome page nếu cần khác biệt */
+.welcome-page .search-container {
+    margin-top: 0; /* Reset margin-top cho welcome page */
+    margin-bottom: 20px; /* Hoặc bất kỳ khoảng cách nào bạn muốn */
+}
+
 
 .search-container input {
     flex: 4;
@@ -102,31 +110,32 @@ body, html {
     background-color: #ffffff;
     border-radius: 20px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+    padding: 25px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 25px;
 }
 
 /* Container cho hình ảnh */
 .image-container {
     width: 100%;
-    height: 70vh;
-    position: relative;
+    max-height: 65vh;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: 15px; /* Bo góc nhiều hơn cho hình ảnh */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
 }
 
 .product-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
     display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
 }
 
 /* Thông tin sản phẩm */
@@ -135,46 +144,86 @@ body, html {
     justify-content: space-between;
     align-items: flex-start;
     width: 100%;
-    padding: 20px;
+    padding: 15px 0;
     font-size: 1rem;
-    gap: 20px;
+    gap: 15px;
     flex-wrap: nowrap;
+    box-sizing: border-box;
+    border-top: 1px solid #eaeaea;
+    border-bottom: 1px solid #eaeaea;
+    margin-top: 10px;
+}
+
+.sizes, .price, .location { /* .location thay cho .material nếu bạn đã đổi tên class */
+    padding: 5px;
     box-sizing: border-box;
 }
 
-.sizes, .location {
-    flex: 1;
-    min-width: 0;
-    max-width: 50%;
-    word-wrap: break-word;
+.sizes {
+    flex-basis: 33%;
+    text-align: left;
+    min-width: 140px; /* Tăng nhẹ để có không gian cho list */
 }
 
-.sizes p, .location p {
-    margin: 0;
-    font-size: 1rem;
-    color: #121212;
+.price {
+    flex-basis: 34%;
+    text-align: center;
+    min-width: 100px;
 }
 
-.sizes p b, .location p b {
+.location { /* .location thay cho .material */
+    flex-basis: 33%;
+    text-align: right;
+    min-width: 130px;
+}
+
+/* Áp dụng cho các tiêu đề cố định trong HTML (nếu có) hoặc các <p> mà JS tạo ra */
+/* Tiêu đề cho phần kích cỡ (HTML: <p><b>KÍCH CỠ CÒN LẠI:</b></p>) */
+.sizes > p:first-child b { /* Nhắm vào thẻ b trong thẻ p đầu tiên của .sizes */
     font-size: 1rem;
     font-weight: bold;
+    color: #000;
+    display: block;
+    margin-bottom: 8px;
 }
 
-/* Danh sách size */
+/* Tiêu đề cho giá và vị trí (nếu bạn đặt id cho <p> và muốn style riêng) */
+/* Ví dụ: #product-price, #location-info sẽ được style bởi các rule chung hơn trừ khi bạn ghi đè */
+#product-price, #location-info {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+#product-price b, #location-info b { /* Style cho phần in đậm bên trong giá và vị trí */
+    font-weight: bold;
+    color: #000;
+}
+
+
+/* Danh sách size - CSS ĐÃ ĐƯỢC CHỈNH SỬA CHO PHÙ HỢP VỚI <li> */
 .size-list {
     list-style: none;
     padding: 0;
     margin: 0;
-    font-size: 1rem;
-    color: #121212;
+    font-size: 0.95rem;
+    color: #333;
 }
 
 .size-list li {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    line-height: 1.5;
+    display: flex; /* Quan trọng: Sắp xếp số lượng và size trên cùng hàng */
+    align-items: center; /* Căn giữa theo chiều dọc */
 }
 
-.size-list b {
+.size-list li b { /* Style cho số lượng (phần in đậm) */
     color: #000000;
+    font-weight: bold;
+    min-width: 25px; /* Đảm bảo các số lượng thẳng hàng */
+    display: inline-block; /* Cho phép min-width */
+    margin-right: 8px; /* Khoảng cách giữa số lượng và tên size */
+    text-align: left;
 }
 
 /* Responsive - Màn hình nhỏ */
@@ -183,28 +232,102 @@ body, html {
         width: 95%;
         gap: 3vh;
     }
-
     .logo {
-        width: 70vw;
+        width: 60vw;
+    }
+    .search-container input, .search-container .search-button {
+        padding: 12px;
+        font-size: 0.9rem;
+        height: 45px;
+    }
+    .search-container input {
+        padding-left: 15px;
+    }
+    .result-page {
+        padding: 20px;
+        gap: 20px;
+    }
+    .image-container {
+        max-height: 55vh;
+        border-radius: 12px;
     }
 
-    .search-container input, .search-container .search-button {
-        padding: 0.8rem;
-        font-size: 0.9rem;
+    .info-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 15px 0;
+    }
+
+    .sizes, .price, .location { /* .location thay cho .material */
+        flex-basis: auto;
+        width: 100%;
+        max-width: 300px;
+        text-align: center !important; /* Căn giữa tất cả khi xếp chồng */
+        min-width: unset;
+    }
+    
+    /* Căn giữa tiêu đề "KÍCH CỠ CÒN LẠI:" khi ở màn hình nhỏ */
+    .sizes > p:first-child {
+        text-align: center !important;
+    }
+    .sizes > p:first-child b {
+       display: inline-block; /* Cho phép căn giữa cùng dòng nếu muốn */
+       margin-bottom: 5px;
+    }
+
+
+    .size-list li {
+        justify-content: center; /* Căn giữa các mục li */
+    }
+    .size-list li b{
+        text-align: right; /* Căn phải số lượng để gần chữ hơn */
+        min-width: unset; /* Reset min-width */
+        margin-right: 5px; /* Giảm khoảng cách một chút */
+    }
+    #location-info { /* Đảm bảo vị trí cũng được căn giữa */
+        text-align: center !important;
     }
 }
 
 /* Responsive - Màn hình rất nhỏ */
 @media (max-width: 480px) {
+    body, html {
+        padding: 10px;
+    }
     .logo {
-        width: 80vw;
+        width: 70vw;
+    }
+    .search-container { /* Áp dụng cho cả 2 thanh tìm kiếm */
+        flex-direction: column;
+        gap: 8px;
+    }
+    .search-container input, .search-container .search-button {
+        width: 100%;
+        font-size: 0.85rem;
+        height: 40px;
+    }
+    .result-page {
+        padding: 15px;
+        gap: 15px;
+        border-radius: 15px;
+    }
+    .image-container {
+        max-height: 50vh;
+        border-radius: 10px;
+    }
+    .info-container {
+        gap: 15px;
     }
 
-    .search-container input {
-        font-size: 0.8rem;
+    /* Điều chỉnh font size cho các phần tử văn bản */
+    .sizes > p:first-child b,
+    #product-price, #location-info,
+    .size-list {
+        font-size: 0.9rem;
     }
-
-    .search-container .search-button {
-        font-size: 0.8rem;
+    #product-price b, #location-info b,
+    .size-list li b {
+        font-size: 0.9rem; /* Hoặc 0.95rem tùy thẩm mỹ */
     }
 }
