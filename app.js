@@ -1,8 +1,8 @@
 let productData = [];
-let locationData = [];
+let locationData = []; // Biến này sẽ được điền dữ liệu từ S3
 let dataLoaded = false;
 
-// Load dữ liệu sản phẩm từ file
+// Load dữ liệu sản phẩm từ file (Giữ nguyên hàm này của bạn)
 function loadProductData() {
   const s3FileUrl = "https://productdata19971998.s3.ap-southeast-1.amazonaws.com/processed_new.txt"; // Đường dẫn file sản phẩm
   const urlWithTimestamp = `${s3FileUrl}?t=${new Date().getTime()}`; // Thêm timestamp để tránh cache
@@ -37,14 +37,16 @@ function loadProductData() {
     });
 }
 
-// Load dữ liệu vị trí từ file
+// Load dữ liệu vị trí từ S3 (ĐÃ SỬA ĐỔI)
 function loadLocationData() {
-  const locationFileUrl = "location.txt"; // Đường dẫn file vị trí
+  // Đường dẫn file vị trí mới từ S3
+  const locationS3Url = "https://productdata19971998.s3.ap-southeast-1.amazonaws.com/ma_chatlieu2.txt";
+  const urlWithTimestamp = `${locationS3Url}?t=${new Date().getTime()}`; // Thêm timestamp để tránh cache
 
-  return fetch(locationFileUrl)
+  return fetch(urlWithTimestamp) // Sử dụng URL mới có timestamp
     .then(response => {
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`HTTP error! Status: ${response.status} when fetching location data.`);
       }
       return response.text();
     })
@@ -52,24 +54,36 @@ function loadLocationData() {
       const lines = data.split('\n');
       locationData = []; // Xóa dữ liệu cũ
       lines.forEach(line => {
-        const [parentCode, shelf, row] = line.split(',').map(item => item.trim());
-        if (parentCode && shelf && row) {
-          locationData.push({
-            parentCode: parentCode,
-            shelf: shelf,
-            row: row
-          });
+        // Giả sử file ma_chatlieu2.txt cũng có định dạng parentCode,shelf,row
+        // Nếu định dạng khác, bạn cần điều chỉnh cách parse ở đây
+        const parts = line.split(',').map(item => item.trim());
+        // Kiểm tra xem có đủ phần tử không, ví dụ file ma_chatlieu2.txt có thể có định dạng khác
+        // Ở đây tôi vẫn giả định nó có 3 phần tử như file location.txt cũ
+        if (parts.length >= 3) { // linh hoạt hơn nếu có nhiều cột hơn nhưng chỉ lấy 3 cột đầu
+            const parentCode = parts[0];
+            const shelf = parts[1]; // Hoặc tên cột tương ứng trong file ma_chatlieu2.txt
+            const row = parts[2];   // Hoặc tên cột tương ứng
+
+            if (parentCode && shelf && row) {
+                locationData.push({
+                parentCode: parentCode,
+                shelf: shelf, // Đảm bảo tên thuộc tính khớp với cách bạn dùng ở searchProduct
+                row: row      // Đảm bảo tên thuộc tính khớp với cách bạn dùng ở searchProduct
+                });
+            }
+        } else if (line.trim() !== "") { // Ghi log nếu dòng không trống nhưng không đúng định dạng
+            console.warn(`Skipping malformed line in location data: "${line}"`);
         }
       });
-      console.log('Location data loaded:', locationData);
+      console.log('Location data loaded from S3:', locationData);
     })
     .catch(error => {
-      console.error('Error loading location data:', error);
-      alert('Không thể tải dữ liệu vị trí. Vui lòng thử lại sau.');
+      console.error('Error loading location data from S3:', error);
+      alert('Không thể tải dữ liệu vị trí từ S3. Vui lòng thử lại sau.');
     });
 }
 
-// Tìm kiếm sản phẩm và hiển thị kết quả
+// Tìm kiếm sản phẩm và hiển thị kết quả (Giữ nguyên hàm này của bạn)
 function searchProduct() {
   if (!dataLoaded) {
     alert("Đang tải dữ liệu. Đợi 5-10s đi!");
@@ -102,6 +116,7 @@ function searchProduct() {
   }
 
   // Hiển thị thông tin vị trí (nếu có)
+  // Đảm bảo rằng thuộc tính 'shelf' và 'row' trong locationData khớp với cách bạn truy cập ở đây
   const location = locationData.find(loc => loc.parentCode.toLowerCase() === productCode);
   if (location) {
     locationDiv.innerHTML = `<b>${location.shelf.toUpperCase()}</b><br><b>${location.row.toUpperCase()}</b>`;
@@ -137,7 +152,7 @@ function searchProduct() {
   }, 500);
 }
 
-// Khi trang được tải, load dữ liệu và thiết lập sự kiện tự động tìm kiếm ở Result Page
+// Khi trang được tải, load dữ liệu và thiết lập sự kiện tự động tìm kiếm ở Result Page (Giữ nguyên)
 window.onload = function() {
   Promise.all([loadProductData(), loadLocationData()])
     .then(() => {
