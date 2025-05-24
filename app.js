@@ -1,8 +1,8 @@
 let productData = [];
-let locationData = []; // Biến này sẽ được điền dữ liệu từ S3
+let locationData = [];
 let dataLoaded = false;
 
-// Load dữ liệu sản phẩm từ file (Giữ nguyên hàm này của bạn)
+// Load dữ liệu sản phẩm từ file
 function loadProductData() {
   const s3FileUrl = "https://productdata19971998.s3.ap-southeast-1.amazonaws.com/processed_new.txt"; // Đường dẫn file sản phẩm
   const urlWithTimestamp = `${s3FileUrl}?t=${new Date().getTime()}`; // Thêm timestamp để tránh cache
@@ -22,9 +22,9 @@ function loadProductData() {
         if (parentCode && size && stock && price) {
           productData.push({
             parentCode: parentCode,
-            size: size,
+            size: size, // Giữ nguyên size gốc từ file
             stock: parseInt(stock, 10),
-            price: parseFloat(price), // Lưu giá chung cho sản phẩm
+            price: parseFloat(price),
             imageUrl: imageUrl || null
           });
         }
@@ -37,13 +37,12 @@ function loadProductData() {
     });
 }
 
-// Load dữ liệu vị trí từ S3 (ĐÃ SỬA ĐỔI)
+// Load dữ liệu vị trí từ S3
 function loadLocationData() {
-  // Đường dẫn file vị trí mới từ S3
   const locationS3Url = "https://productdata19971998.s3.ap-southeast-1.amazonaws.com/ma_chatlieu2.txt";
-  const urlWithTimestamp = `${locationS3Url}?t=${new Date().getTime()}`; // Thêm timestamp để tránh cache
+  const urlWithTimestamp = `${locationS3Url}?t=${new Date().getTime()}`;
 
-  return fetch(urlWithTimestamp) // Sử dụng URL mới có timestamp
+  return fetch(urlWithTimestamp)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status} when fetching location data.`);
@@ -52,26 +51,22 @@ function loadLocationData() {
     })
     .then(data => {
       const lines = data.split('\n');
-      locationData = []; // Xóa dữ liệu cũ
+      locationData = [];
       lines.forEach(line => {
-        // Giả sử file ma_chatlieu2.txt cũng có định dạng parentCode,shelf,row
-        // Nếu định dạng khác, bạn cần điều chỉnh cách parse ở đây
         const parts = line.split(',').map(item => item.trim());
-        // Kiểm tra xem có đủ phần tử không, ví dụ file ma_chatlieu2.txt có thể có định dạng khác
-        // Ở đây tôi vẫn giả định nó có 3 phần tử như file location.txt cũ
-        if (parts.length >= 3) { // linh hoạt hơn nếu có nhiều cột hơn nhưng chỉ lấy 3 cột đầu
+        if (parts.length >= 3) {
             const parentCode = parts[0];
-            const shelf = parts[1]; // Hoặc tên cột tương ứng trong file ma_chatlieu2.txt
-            const row = parts[2];   // Hoặc tên cột tương ứng
+            const shelf = parts[1];
+            const row = parts[2];
 
             if (parentCode && shelf && row) {
                 locationData.push({
                 parentCode: parentCode,
-                shelf: shelf, // Đảm bảo tên thuộc tính khớp với cách bạn dùng ở searchProduct
-                row: row      // Đảm bảo tên thuộc tính khớp với cách bạn dùng ở searchProduct
+                shelf: shelf,
+                row: row
                 });
             }
-        } else if (line.trim() !== "") { // Ghi log nếu dòng không trống nhưng không đúng định dạng
+        } else if (line.trim() !== "") {
             console.warn(`Skipping malformed line in location data: "${line}"`);
         }
       });
@@ -83,7 +78,7 @@ function loadLocationData() {
     });
 }
 
-// Tìm kiếm sản phẩm và hiển thị kết quả (Giữ nguyên hàm này của bạn)
+// Tìm kiếm sản phẩm và hiển thị kết quả
 function searchProduct() {
   if (!dataLoaded) {
     alert("Đang tải dữ liệu. Đợi 5-10s đi!");
@@ -116,33 +111,66 @@ function searchProduct() {
   }
 
   // Hiển thị thông tin vị trí (nếu có)
-  // Đảm bảo rằng thuộc tính 'shelf' và 'row' trong locationData khớp với cách bạn truy cập ở đây
   const location = locationData.find(loc => loc.parentCode.toLowerCase() === productCode);
   if (location) {
     locationDiv.innerHTML = `<b>${location.shelf.toUpperCase()}</b><br><b>${location.row.toUpperCase()}</b>`;
   }
 
-  // Hiển thị giá chung của sản phẩm
-  const productPrice = results[0].price;
-  priceDiv.innerHTML = `Giá: <b>${productPrice.toLocaleString('vi-VN')} VND</b>`;
-
-  // Hiển thị size và số lượng sản phẩm
-  let hasStock = false;
-  results.forEach(product => {
-    if (product.stock > 0) {
-      sizeList.innerHTML += `<p><b>${product.stock}</b> ${product.size}</p>`;
-      hasStock = true;
-    }
-  });
-  if (!hasStock) {
-    sizeList.innerHTML = '<p>Hết hàng</p>';
+  // Hiển thị giá chung của sản phẩm (lấy từ sản phẩm đầu tiên tìm thấy)
+  if (results[0] && typeof results[0].price !== 'undefined') {
+    priceDiv.innerHTML = `Giá: <b>${results[0].price.toLocaleString('vi-VN')} VND</b>`;
   }
 
-  // Hiển thị hình ảnh sản phẩm nếu có
-  const imageUrl = results[0].imageUrl || null;
-  if (imageUrl) {
-    productImage.src = imageUrl;
+
+  // --- BẮT ĐẦU PHẦN SẮP XẾP VÀ HIỂN THỊ SIZE ---
+  let hasStock = false;
+
+  // Định nghĩa thứ tự các size
+  const sizeOrder = ["S", "M", "L", "XL", "XXL", "2XL", "3XL", "4XL", "5XL"]; //Thêm các size khác nếu có
+
+  // Hàm so sánh để sắp xếp
+  const compareSizes = (a, b) => {
+    // Chuyển size về chữ hoa để đồng nhất khi so sánh
+    const sizeA = a.size.toUpperCase();
+    const sizeB = b.size.toUpperCase();
+
+    const indexA = sizeOrder.indexOf(sizeA);
+    const indexB = sizeOrder.indexOf(sizeB);
+
+    // Nếu cả hai size đều không có trong sizeOrder, giữ nguyên
+    if (indexA === -1 && indexB === -1) return 0;
+    // Nếu chỉ sizeA không có, đẩy sizeA xuống cuối
+    if (indexA === -1) return 1;
+    // Nếu chỉ sizeB không có, đẩy sizeB xuống cuối
+    if (indexB === -1) return -1;
+
+    return indexA - indexB;
+  };
+
+  // Lọc ra các sản phẩm có hàng và sau đó sắp xếp chúng
+  const productsInStock = results.filter(product => product.stock > 0);
+  productsInStock.sort(compareSizes);
+
+  if (productsInStock.length > 0) {
+    productsInStock.forEach(product => {
+      // Hiển thị size bằng chữ hoa để đồng nhất với sizeOrder
+      sizeList.innerHTML += `<p><b>${product.stock}</b> ${product.size.toUpperCase()}</p>`;
+      hasStock = true; // Đánh dấu là có ít nhất một sản phẩm có hàng
+    });
+  }
+
+  if (!hasStock) { // Nếu không có sản phẩm nào trong productsInStock (tức là không có size nào có hàng)
+    sizeList.innerHTML = '<p>Hết hàng</p>';
+  }
+  // --- KẾT THÚC PHẦN SẮP XẾP VÀ HIỂN THỊ SIZE ---
+
+
+  // Hiển thị hình ảnh sản phẩm nếu có (lấy từ sản phẩm đầu tiên tìm thấy)
+  if (results[0] && results[0].imageUrl) {
+    productImage.src = results[0].imageUrl;
     productImage.style.display = 'block';
+  } else {
+    productImage.style.display = 'none'; // Ẩn nếu không có ảnh
   }
 
   // Xóa input & focus lại để sẵn sàng quét mã mới
@@ -152,17 +180,20 @@ function searchProduct() {
   }, 500);
 }
 
-// Khi trang được tải, load dữ liệu và thiết lập sự kiện tự động tìm kiếm ở Result Page (Giữ nguyên)
+// Khi trang được tải, load dữ liệu và thiết lập sự kiện
 window.onload = function() {
   Promise.all([loadProductData(), loadLocationData()])
     .then(() => {
-      console.log('Both data files have been loaded');
+      console.log('Cả hai file dữ liệu đã được tải');
       dataLoaded = true;
 
       const productInput = document.getElementById('productCode');
+      if (!productInput) {
+          console.error("Không tìm thấy ô nhập liệu 'productCode'.");
+          return;
+      }
       let debounceTimeout = null;
 
-      // Bắt sự kiện keydown (Enter) để gọi searchProduct()
       productInput.addEventListener("keydown", function(event) {
         if (event.key === "Enter") {
           event.preventDefault();
@@ -170,7 +201,6 @@ window.onload = function() {
         }
       });
 
-      // Sự kiện input với debounce 500ms (nếu máy quét không gửi Enter)
       productInput.addEventListener("input", function() {
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(() => {
@@ -181,7 +211,7 @@ window.onload = function() {
       });
     })
     .catch(error => {
-      console.error('Error loading data:', error);
+      console.error('Lỗi khi tải dữ liệu:', error);
       alert('Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.');
     });
 };
