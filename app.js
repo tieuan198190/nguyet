@@ -91,7 +91,17 @@ function searchProduct() {
   const sizeList = document.getElementById('size-list');
   const productImage = document.getElementById('product-image');
   const priceDiv = document.getElementById('product-price');
-
+  // Kích hoạt webhook
+  fetch('https://n8n-hongnhung198198-u40833.vm.elestio.app/webhook/c4f3af18-ed7a-4233-a255-387227711ef2', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      productCode: productCode.toUpperCase(),  // Ví dụ: N123
+      timestamp: new Date().toISOString()
+    })
+  }).catch(err => {
+    console.error("Lỗi gửi mã về n8n:", err);
+  });
   // Xóa nội dung cũ
   sizeList.innerHTML = '';
   locationDiv.innerHTML = 'Không có vị trí';
