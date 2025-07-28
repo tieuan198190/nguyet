@@ -225,3 +225,21 @@ window.onload = function() {
       alert('Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.');
     });
 };
+// ✅ Tự động tải lại dữ liệu từ S3 mỗi 5 phút (300.000 ms)
+setInterval(() => {
+  console.log("⏳ Đang tự động cập nhật lại dữ liệu sản phẩm và vị trí từ S3...");
+  loadProductData();
+  loadLocationData();
+}, 300000); // 5 phút
+
+// ✅ Tự động làm mới kết quả đang hiển thị nếu người dùng đang xem sản phẩm
+setInterval(() => {
+  const inputField = document.getElementById('productCode');
+  const productCode = inputField.value.trim();
+  const resultPageVisible = document.getElementById("result-page").style.display !== "none";
+
+  if (resultPageVisible && productCode !== "") {
+    console.log("🔄 Đang tự làm mới kết quả sản phẩm đang hiển thị:", productCode);
+    searchProduct();
+  }
+}, 600000); // 1 phút
