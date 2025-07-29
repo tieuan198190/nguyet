@@ -230,7 +230,7 @@ setInterval(() => {
   console.log("⏳ Đang tự động cập nhật lại dữ liệu sản phẩm và vị trí từ S3...");
   loadProductData();
   loadLocationData();
-}, 300000); // 5 phút
+}, 3600000); // 5 phút
 
 // ✅ Tự động làm mới kết quả đang hiển thị nếu người dùng đang xem sản phẩm
 setInterval(() => {
@@ -242,4 +242,4 @@ setInterval(() => {
     console.log("🔄 Đang tự làm mới kết quả sản phẩm đang hiển thị:", productCode);
     searchProduct();
   }
-}, 600000); // 1 phút
+}, 3600000); // 1 phút
