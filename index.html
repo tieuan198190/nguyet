@@ -1,43 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Search Product</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Auto refresh sau 10 phút (600000 ms) -->
-  <script>
-    setInterval(() => {
-      window.location.reload();
-    }, 600000);
-  </script>
 </head>
 <body>
-  <!-- Welcome Page -->
   <div class="welcome-page" id="welcome-page">
-    <!-- Logo -->
     <div class="logo-container">
       <img src="comap_logo.jpg" alt="CÔ MẬP FASHION NÈ" class="logo">
     </div>
-    <!-- Thanh tìm kiếm -->
     <div class="search-container">
       <input type="text" id="welcomeProductCode" placeholder="Nhập mã sản phẩm">
       <button class="search-button" onclick="goToResultPage()">Tìm</button>
     </div>
   </div>
 
-  <!-- Result Page -->
   <div class="result-page" id="result-page" style="display: none;">
-    <!-- Phần hiển thị hình ảnh sản phẩm -->
     <div class="image-container">
-      <img src="" alt="Product Image" id="product-image" class="product-image">
+      <img src="comap_logo.jpg" alt="Product Image" id="product-image" class="product-image">
     </div>
-    <!-- Phần thông tin sản phẩm -->
     <div class="info-container">
       <div class="sizes">
         <ul id="size-list" class="size-list">
-          <!-- Danh sách size sẽ được hiển thị tại đây -->
-        </ul>
+          </ul>
       </div>
       <div class="price">
         <p id="product-price">Không có giá</p>
@@ -46,45 +33,48 @@
         <p id="location-info">Không có vị trí</p>
       </div>
     </div>
-    <!-- Thanh tìm kiếm lại -->
     <div class="search-container">
       <input type="text" id="productCode" placeholder="Nhập mã sản phẩm khác">
       <button class="search-button" onclick="searchProduct()">Tìm</button>
     </div>
+    <button id="backButton" class="back-button">Quay lại</button>
   </div>
 
-  <!-- Script xử lý Welcome Page: tự động focus và chuyển trang khi quét mã -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      // Tự động focus vào ô nhập mã trên Welcome Page khi load trang
-      const welcomeInput = document.getElementById("welcomeProductCode");
-      welcomeInput.focus();
+  <script src="app.js"></script>
 
-      // Bắt phím Enter ở Welcome Page
-      welcomeInput.addEventListener("keydown", function(event) {
+  <script>
+    const welcomeInput = document.getElementById("welcomeProductCode");
+    const resultInput = document.getElementById("productCode");
+
+    document.addEventListener("DOMContentLoaded", function () {
+      welcomeInput.focus();
+      welcomeInput.addEventListener("keydown", event => {
         if (event.key === "Enter") {
           event.preventDefault();
           goToResultPage();
         }
       });
-
-      // Nếu máy quét không gửi Enter, dùng debounce 500ms để tự chuyển trang
+      
       let welcomeTimeout = null;
-      welcomeInput.addEventListener("input", function () {
+      welcomeInput.addEventListener("input", () => {
         clearTimeout(welcomeTimeout);
         welcomeTimeout = setTimeout(() => {
-          if (welcomeInput.value.trim() !== "") {
-            goToResultPage();
-          }
+          if (welcomeInput.value.trim() !== "") goToResultPage();
         }, 500);
+      });
+      
+      resultInput.addEventListener("keydown", event => {
+         if (event.key === "Enter") {
+          event.preventDefault();
+          searchProduct();
+        }
       });
     });
 
-    // Hàm chuyển từ Welcome Page sang Result Page và gọi tìm kiếm
     function goToResultPage() {
-      const welcomeProductCode = document.getElementById('welcomeProductCode').value.trim();
+      const welcomeProductCode = welcomeInput.value.trim();
       if (welcomeProductCode) {
-        document.getElementById('productCode').value = welcomeProductCode;
+        resultInput.value = welcomeProductCode;
         document.getElementById('welcome-page').style.display = 'none';
         document.getElementById('result-page').style.display = 'block';
         searchProduct();
@@ -93,8 +83,5 @@
       }
     }
   </script>
-
-  <!-- Nạp file JS chính -->
-  <script src="app.js"></script>
 </body>
 </html>
