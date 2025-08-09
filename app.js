@@ -95,7 +95,7 @@ function displayResults(productResults, locationResults, productCode) {
               const li = document.createElement('li');
               li.innerHTML = `
               <span class="size-info"><strong>${item.size}</strong></span>
-              <span class="stock-info">  -  <strong>${item.stock}</strong></span>
+              <span class="stock-info">    <strong>${item.stock}</strong></span>
           `;
               sizeListEl.appendChild(li);
           });
