@@ -375,112 +375,164 @@ body, html {
         font-size: 0.9rem;
     }
 }
-/* ======= CÔ MẬP • Product Sheet v1 ======= */
+/* ===== Flat Design + Large Rounded Corners ===== */
 :root{
-  --ink:#0f172a;        /* chữ chính */
-  --sub:#64748b;        /* chữ phụ */
-  --line:#e5e7eb;       /* viền nhạt */
-  --bg:#f7f8fb;         /* nền tổng thể */
-  --chip:#f8fafc;       /* nền thẻ nhỏ */
-  --pad:16px;
-  --r:14px;             /* bo góc đồng nhất */
-  --shadow:0 10px 30px rgba(2,6,23,.06);
-}
-
-html,body{ height:100%; background:var(--bg); }
-*{ box-sizing:border-box; }
-
-/* Header gọn – một hàng, cố định cao, luôn nhất quán */
-.cm-header{
-  position:sticky; top:0; z-index:30;
-  display:flex; align-items:center; justify-content:center;
-  height:56px; padding:0 16px; background:#fff; border-bottom:1px solid var(--line);
-}
-.cm-logo{ height:26px; object-fit:contain; filter: grayscale(100%); opacity:.9; }
-.cm-code{
-  position:absolute; right:16px; top:0; bottom:0; margin:auto 0;
-  height:fit-content; padding:6px 10px; border-radius:999px;
-  background:var(--chip); color:var(--ink); font-weight:700; font-size:.9rem;
-  border:1px solid var(--line);
-}
-
-/* Khung chính là một “tờ” duy nhất */
-.result-page{
-  max-width:1100px; margin:0 auto;
-  display:grid; grid-template-rows:auto 1fr auto; gap:0;
-  min-height:calc(100dvh - 56px);
-  background:#fff; border-radius:0; box-shadow:none; padding:0;
-}
-
-/* Ảnh là chủ thể: chiếm không gian, không viền, không decor */
-.image-container{
-  min-height:56dvh; background:#fff;
-  display:grid; place-items:center; padding:12px 0;
-  border-bottom:1px solid var(--line);
-}
-.product-image{
-  width:100%; height:100%; max-width:100%;
-  object-fit:contain;
-  /* Tỉ lệ ưu tiên dọc; tự chuyển khi xoay ngang */
-  aspect-ratio: 3 / 4;
-}
-
-/* Khối thông tin: một grid rõ ràng, nhịp điệu đều */
-.info-container{
-  display:grid; gap:14px 16px; padding:18px var(--pad);
-  grid-template-columns: 1fr auto;
-}
-#product-price{
-  margin:0; font-size:1.35rem; font-weight:800; color:var(--ink);
-}
-#location-info{
-  margin:0; align-self:start; text-align:right; color:var(--sub); font-size:.95rem;
-}
-
-/* Size: viên “pill” nhất quán; số tồn canh phải */
-.size-list{
-  grid-column:1 / -1;
-  list-style:none; margin:0; padding:0;
-  display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px;
-}
-.size-list li{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:10px 12px; border-radius:var(--r);
-  background:var(--chip); border:1px solid var(--line);
-  color:var(--ink); font-weight:600;
-}
-
-/* Thanh nhập: dính đáy, thoáng; một hàng duy nhất */
-.result-page .search-container{
-  position:sticky; bottom:0; z-index:10;
-  display:flex; gap:10px; align-items:center;
-  padding:12px var(--pad) calc(12px + env(safe-area-inset-bottom,8px));
-  background:#fff; border-top:1px solid var(--line);
-}
-.search-container input{
-  height:48px; border-radius:12px; border:1px solid var(--line);
-  padding:0 14px; font-size:1rem;
-}
-.search-container button{
-  height:48px; border-radius:12px; padding:0 18px; font-weight:700;
-  box-shadow: var(--shadow);
-}
-
-/* Landscape / màn rộng: bố cục 60/40, vẫn một chủ thể */
-@media (orientation: landscape) and (min-width: 900px){
-  .result-page{
-    grid-template-columns: 60% 40%;
-    grid-template-rows: auto 1fr auto;
+    --r: 20px;            /* bo góc lớn hơn */
+    --line:#e5e7eb;
+    --bg:#f7f8fb;
+    --chip:#ffffff;
   }
-  .image-container{ grid-column:1; grid-row:1 / span 3; border-right:1px solid var(--line); border-bottom:none; padding:16px; }
-  .product-image{ aspect-ratio: 4 / 3; } /* ưu tiên ngang */
-  .info-container{ grid-column:2; grid-row:1; }
-  .result-page .search-container{ grid-column:2; grid-row:3; }
-  #location-info{ text-align:left; }
-}
+  
+  /* Sheet bo tròn nhiều, không shadow nặng */
+  .sheet{
+    width:min(100%, 980px);
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--r);
+    overflow:hidden;
+    box-shadow:none;
+    display:grid;
+    grid-template-rows:auto auto;
+  }
+  
+  /* Ảnh: góc bo tròn trên */
+  .image-container{
+    background:#f2f4f7;
+    display:grid; place-items:center;
+    padding:0;
+    aspect-ratio: 3/4;
+    border-top-left-radius:var(--r);
+    border-top-right-radius:var(--r);
+  }
+  .product-image{
+    width:100%; height:100%;
+    object-fit:contain;
+    border-radius:0; /* ảnh vuông trong khung bo */
+  }
+  
+  /* Info bo tròn dưới */
+  .info-container{
+    padding:18px 16px 14px;
+    border-top:1px solid var(--line);
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap:10px 14px;
+    border-bottom-left-radius:var(--r);
+    border-bottom-right-radius:var(--r);
+  }
+  
+  /* Size pill bo lớn hơn */
+  .size-list li{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 14px;
+    border:1px solid var(--line);
+    border-radius:var(--r);
+    background:var(--chip);
+  }
+  
+  /* Thanh nhập bo lớn, phẳng */
+  .search-container{
+    width:min(100%, 980px);
+    position:sticky; bottom:0; z-index:10;
+    display:flex; gap:10px; align-items:center;
+    padding:12px 12px calc(12px + env(safe-area-inset-bottom,8px));
+    background:var(--bg);
+    border-radius:var(--r);
+    border:1px solid var(--line);
+  }
+  .search-container input{
+    flex:1;
+    height:48px;
+    border-radius:var(--r);
+    border:1px solid var(--line);
+    padding:0 14px;
+    font-size:1rem;
+  }
+  .search-container button{
+    height:48px;
+    border-radius:var(--r);
+    padding:0 18px;
+    font-weight:700;
+    border:none;
+    background:#2563eb;
+    color:#fff;
+  }
+  /* ===== Size pill gọn gàng, rõ ràng hơn ===== */
+.size-list{
+    grid-column:1 / -1;
+    list-style:none; margin:6px 0 0; padding:0;
+    display:grid; grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:8px;
+  }
+  .size-list li{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 14px;
+    border:1px solid #e6eaf0;
+    border-radius:20px; /* bo góc lớn để đồng bộ flat design */
+    background:#ffffff;
+    font-weight:600;
+    font-size:1rem;
+    color:#0f172a;
+  }
+  .size-list li span:first-child{
+    flex:0 0 auto;       /* size giữ nguyên chiều rộng chữ */
+  }
+  .size-list li span:last-child{
+    flex:0 0 auto;       /* số lượng cố định */
+    min-width: 28px;     /* đảm bảo không rung */
+    text-align:right;
+    color:#2563eb;       /* màu nhấn cho số lượng */
+  }
+  /* ===== Đưa GIÁ cùng hàng với SIZE, không lệch ===== */
 
-/* Màn rất nhỏ: ưu tiên ảnh, đơn cột size */
-@media (max-width:390px){
-  .image-container{ min-height:62dvh; }
-  .size-list{ grid-template-columns: 1fr; }
-}
+/* Sắp lưới theo vùng rõ ràng: sizes | price  ;  dưới là meta */
+.info-container{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "sizes price"
+      "meta  meta";
+    align-items:start;     /* canh đỉnh cho đồng hàng */
+    gap:12px 16px;
+  }
+  
+  /* Sizes chiếm cột trái, 2 cột pill */
+  .size-list{
+    grid-area:sizes;
+    list-style:none; margin:0; padding:0;
+    display:grid; grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:10px;
+  }
+  .size-list li{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 14px;
+    border:1px solid #e6eaf0; border-radius:20px; background:#fff;
+    font-weight:600; color:#0f172a;
+  }
+  .size-list li span:last-child{
+    min-width:28px; text-align:right; color:#2563eb; font-variation-settings:"wght" 700;
+  }
+  
+  /* GIÁ là 1 thẻ đồng phong cách, nằm cột phải */
+  #product-price{
+    grid-area:price;
+    margin:0;
+    padding:12px 16px;
+    border:1px solid #e6eaf0; border-radius:20px; background:#fff;
+    font-size:1.15rem; font-weight:800; color:#0f172a;
+    justify-self:end;   /* bám cạnh phải cột phải */
+    white-space:nowrap; /* không xuống dòng giá */
+  }
+  
+  /* Chất liệu/địa điểm chiếm trọn hàng dưới */
+  #location-info{
+    grid-area:meta; margin:2px 0 0; color:#64748b; font-size:.95rem;
+  }
+  
+  /* MOBILE rất hẹp: cho size 1 cột, giá nằm trên cùng bên phải */
+  @media (max-width: 390px){
+    .size-list{ grid-template-columns:1fr; }
+  }
+  
