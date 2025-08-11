@@ -535,4 +535,32 @@ body, html {
   @media (max-width: 390px){
     .size-list{ grid-template-columns:1fr; }
   }
+/* ===== Size – Số lượng sát nhau ===== */
+.size-list{
+    grid-area:sizes;
+    list-style:none; margin:0; padding:0;
+    display:grid;
+    grid-template-columns: repeat(2, minmax(140px, 1fr)); /* 2 cột gọn */
+    gap:10px;
+  }
+  @media (max-width: 420px){
+    .size-list{ grid-template-columns: 1fr; }           /* mobile hẹp: 1 cột */
+  }
+  
+  .size-list li{
+    display:flex;
+    align-items:center;
+    justify-content:center;   /* căn giữa, không kéo hai đầu */
+    gap:8px;                  /* khoảng sát nhau */
+    padding:10px 14px;
+    border:1px solid #e6eaf0;
+    border-radius:20px;
+    background:#fff;
+    font-weight:700;
+    color:#0f172a;
+  }
+  
+  .size-list .sz  { letter-spacing:.3px; }
+  .size-list .sep { opacity:.65; }                      /* dấu gạch mảnh */
+  .size-list .qty { color:#2563eb; min-width:0; }       /* số nổi nhẹ, không đặt min-width */
   
