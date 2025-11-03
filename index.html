@@ -23,8 +23,7 @@
     </div>
     <div class="info-container">
       <div class="sizes">
-        <ul id="size-list" class="size-list">
-          </ul>
+        <ul id="size-list" class="size-list"></ul>
       </div>
       <div class="price">
         <p id="product-price">Không có giá</p>
@@ -54,7 +53,7 @@
           goToResultPage();
         }
       });
-      
+
       let welcomeTimeout = null;
       welcomeInput.addEventListener("input", () => {
         clearTimeout(welcomeTimeout);
@@ -62,9 +61,9 @@
           if (welcomeInput.value.trim() !== "") goToResultPage();
         }, 500);
       });
-      
+
       resultInput.addEventListener("keydown", event => {
-         if (event.key === "Enter") {
+        if (event.key === "Enter") {
           event.preventDefault();
           searchProduct();
         }
