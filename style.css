@@ -1,586 +1,314 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap'); /* Thêm weight 800 nếu cần */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap');
 
-/* Reset CSS */
+:root {
+  /* —— LIQUID GLASS —— */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+  --glass-backdrop: blur(12px);
+  --r: 24px;
+
+  /* —— VIBRANT PASTEL PALETTE —— */
+  --bg-gradient: linear-gradient(135deg, #ffecf1, #e0f2fe, #d1fae5); /* hồng đào → xanh baby → xanh lá pastel */
+  --card-gradient-1: linear-gradient(145deg, #e0f2fe, #dbeafe); /* xanh baby sáng */
+  --card-gradient-2: linear-gradient(145deg, #ffecf1, #ffe4e6); /* hồng đào rực rỡ */
+  --card-gradient-3: linear-gradient(145deg, #d1fae5, #dcfce7); /* xanh lá pastel tươi */
+
+  --primary: #0ea5e9; /* xanh dương neon pastel */
+  --text: #0f172a;
+  --text-secondary: #64748b;
+  --divider: rgba(226, 232, 240, 0.6);
+
+  /* —— HIGHLIGHT COLORS —— */
+  --accent-pink: #ec4899; /* hồng neon pastel */
+  --accent-blue: #3b82f6; /* xanh dương nổi */
+  --accent-green: #10b981; /* xanh lá neon */
+}
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Toàn bộ trang - Hoạt ảnh động hơn */
 body, html {
-    height: 100%;
-    width: 100%;
-    font-family: 'Nunito', sans-serif;
-    background-color: #f7f9fc;
-    color: #454f5b;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 15px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+  width: 100%;
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Keyframes cho hiệu ứng xuất hiện */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border-radius: var(--r);
+  box-shadow: var(--glass-shadow);
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes pulseShadow {
-    0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.3); }
-    70% { box-shadow: 0 0 0 8px rgba(0, 123, 255, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
-}
-
-
-/* Welcome Page - Hoạt ảnh động hơn */
+/* Welcome Page */
 .welcome-page {
-    width: 90%;
-    max-width: 550px;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 35px;
-    padding: 25px;
-    background-color: #ffffff;
-    border-radius: 16px; /* Tăng bo góc cho mềm mại hơn nữa */
-    box-shadow: 0 6px 18px rgba(0,0,0,0.07); /* Shadow rõ hơn một chút */
-    animation: fadeInUp 0.6s ease-out; /* Hoạt ảnh xuất hiện */
+  width: 90%;
+  max-width: 550px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 32px;
+  background: var(--card-gradient-2);
+  border-radius: var(--r);
+  backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  animation: fadeInUp 0.6s ease-out;
 }
 
 .logo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    animation: fadeIn 0.8s 0.2s ease-out backwards; /* Xuất hiện sau welcome-page một chút */
+  animation: fadeIn 0.8s 0.2s ease-out backwards;
 }
 
 .logo {
-    width: 40vw;
-    max-width: 220px;
-    height: auto;
-    object-fit: contain;
+  width: 40vw;
+  max-width: 220px;
+  height: auto;
+  object-fit: contain;
 }
 
-/* Thanh tìm kiếm - Hoạt ảnh động hơn */
+/* Search Container */
 .search-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    margin-top: 15px;
-    animation: fadeInUp 0.6s 0.3s ease-out backwards; /* Xuất hiện sau logo */
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 12px;
+  animation: fadeInUp 0.6s 0.3s ease-out backwards;
+}
+
+.search-container input,
+.search-container .search-button {
+  height: 56px;
+  border-radius: var(--r);
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  padding: 0 20px;
+  transition: all 0.3s ease;
 }
 
 .search-container input {
-    flex: 4;
-    padding: 14px 20px;
-    border: 1px solid #e1e5ea;
-    border-radius: 12px; /* Bo góc input */
-    font-size: 1rem;
-    font-family: 'Nunito', sans-serif;
-    outline: none;
-    color: #333a42;
-    background-color: #fdfdff;
-    transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, transform 0.2s ease;
-    height: 52px; /* Tăng nhẹ chiều cao */
+  flex: 4;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--divider);
+  outline: none;
+  color: var(--text);
+  backdrop-filter: blur(10px);
 }
-
 .search-container input::placeholder {
-    color: #9daab8;
+  color: var(--text-secondary);
 }
-
 .search-container input:focus {
-    border-color: #007bff;
-    background-color: #ffffff;
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.2); /* Shadow rõ hơn khi focus */
-    transform: translateY(-1px); /* Nhấc nhẹ input khi focus */
+  border-color: var(--accent-blue);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
 }
 
 .search-container .search-button {
-    flex: 1;
-    padding: 14px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 12px; /* Bo góc button */
-    background-color: #007bff;
-    color: #ffffff;
-    font-weight: 700; /* Nunito Bold */
-    font-family: 'Nunito', sans-serif;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out, transform 0.2s ease-out, box-shadow 0.3s ease-out;
-    height: 52px;
-    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2); /* Shadow nhẹ cho nút */
+  flex: 1;
+  background: linear-gradient(145deg, var(--accent-blue), #2563eb);
+  color: white;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
-
 .search-container .search-button:hover {
-    background-color: #0069d9;
-    transform: translateY(-2px) scale(1.02); /* Nhấc nút và phóng to nhẹ khi hover */
-    box-shadow: 0 4px 8px rgba(0, 105, 217, 0.3); /* Shadow động hơn khi hover */
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
 }
 .search-container .search-button:active {
-    background-color: #0056b3;
-    transform: translateY(0px) scale(0.98); /* Ấn nút xuống và thu nhỏ lại */
-    box-shadow: 0 1px 2px rgba(0, 86, 179, 0.2); /* Shadow khi active */
+  transform: translateY(0) scale(0.99);
 }
 
-
-/* Result Page - Hoạt ảnh động hơn */
+/* Result Page */
 .result-page {
-    width: 100%;
-    max-width: 750px;
-    background-color: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
-    padding: 25px;
-    display: flex; /* Sẽ được JS đổi thành 'flex' hoặc 'block' */
-    flex-direction: column;
-    align-items: center;
-    gap: 25px;
-    /* Sẽ được JS set display: block; hoặc flex.
-       Để animation hoạt động khi display đổi từ none,
-       cần một chút khéo léo hoặc JS thêm class.
-       Giả sử JS sẽ thêm class "visible" khi hiển thị:
-    */
+  width: 100%;
+  max-width: 750px;
+  padding: 28px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  background: var(--card-gradient-1);
+  border-radius: var(--r);
+  backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
-/* Nếu bạn có thể thêm class "visible" bằng JS khi hiển thị Result Page */
 .result-page.visible {
-    display: flex; /* hoặc block */
-    animation: fadeInUp 0.5s ease-out;
+  display: flex;
+  animation: fadeInUp 0.5s ease-out;
 }
 
-
-/* Container cho hình ảnh - Hoạt ảnh động hơn */
+/* Ảnh 3:4 */
 .image-container {
-    width: 100%;
-    max-height: 60vh;
-    overflow: hidden;
-    border-radius: 12px; /* Bo góc */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f0f3f6;
-    /* animation: fadeIn 0.5s 0.2s ease-out backwards; */ /* Nếu result-page có animation riêng thì có thể bỏ cái này */
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--r);
+  overflow: hidden;
+  background: rgba(241, 245, 249, 0.7);
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.5);
 }
 
 .product-image {
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    display: block;
-    opacity: 0; /* Bắt đầu ẩn */
-    animation: fadeIn 0.6s ease-out forwards; /* Mờ dần ảnh khi src được gán */
-    /* 'forwards' giữ trạng thái cuối của animation (opacity: 1) */
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  animation: fadeIn 0.6s ease-out forwards;
 }
-/* Điều kiện để animation chạy lại khi ảnh thay đổi (nếu cần) có thể phức tạp hơn với CSS thuần */
 
-
-/* Thông tin sản phẩm - Hoạt ảnh động hơn */
+/* Info Container — 3 cột */
 .info-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    width: 100%;
-    padding: 20px 0;
-    font-size: 1rem;
-    gap: 20px;
-    flex-wrap: nowrap;
-    box-sizing: border-box;
-    border-top: 1px solid #e8edf3;
-    border-bottom: 1px solid #e8edf3;
-    margin-top: 15px;
-    /* animation: fadeInUp 0.5s 0.3s ease-out backwards; */ /* Tương tự image-container */
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+@media (max-width: 768px) {
+  .info-container {
+    grid-template-columns: 1fr;
+  }
 }
 
-.sizes, .price, .location {
-    padding: 8px;
-    box-sizing: border-box;
-    /* Thêm hiệu ứng xuất hiện cho từng khối nếu muốn */
-    /* opacity: 0; */
-    /* animation: fadeInUp 0.5s ease-out forwards; */
-}
-/* Ví dụ delay cho từng khối con */
-/* .sizes { animation-delay: 0.4s; }
-.price { animation-delay: 0.5s; }
-.location { animation-delay: 0.6s; } */
-
-
-/* Tiêu đề "KÍCH CỠ CÒN LẠI:" */
-.sizes > p:first-child b {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #333a42;
-    display: block;
-    margin-bottom: 12px;
+/* Card chung */
+.info-card {
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 1px solid var(--divider);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 92px;
 }
 
-#product-price, #location-info {
-    margin: 0 0 10px 0;
-    font-size: 1rem;
-    color: #5a6572;
-    line-height: 1.5;
-    transition: color 0.3s ease; /* Chuyển màu chữ mượt hơn khi nội dung thay đổi */
+/* —— SIZE DỌC 1 CỘT —— */
+#sizes-section {
+  background: var(--card-gradient-2);
+  padding: 16px;
+  border-radius: 20px;
+  width: 100%;
 }
 
-#product-price b, #location-info b {
-    font-weight: 700;
-    color: #2c333b;
-}
-
-/* Danh sách size - Hoạt ảnh động hơn */
 .size-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-size: 0.95rem;
-    color: #5a6572;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
 }
 
 .size-list li {
-    margin-bottom: 8px;
-    line-height: 1.6;
-    display: flex;
-    align-items: center;
-    opacity: 0; /* Bắt đầu ẩn */
-    animation: fadeInUp 0.4s ease-out forwards;
-    /* Tạo hiệu ứng stagger (xuất hiện lần lượt) cho các <li> bằng CSS thuần hơi khó,
-       nhưng có thể làm từng cái một nếu biết số lượng hoặc dùng nth-child */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(250, 245, 255, 0.7);
+  font-weight: 700;
+  color: var(--text);
+  font-size: 1rem;
+  backdrop-filter: blur(6px);
+  transition: transform 0.2s ease, background 0.2s ease, border 0.2s ease;
 }
 
-/* Ví dụ stagger đơn giản cho vài li đầu tiên */
-.size-list li:nth-child(1) { animation-delay: 0.1s; }
-.size-list li:nth-child(2) { animation-delay: 0.18s; }
-.size-list li:nth-child(3) { animation-delay: 0.26s; }
-.size-list li:nth-child(4) { animation-delay: 0.34s; }
-.size-list li:nth-child(5) { animation-delay: 0.42s; }
-/* Bạn có thể cần nhiều hơn hoặc điều chỉnh thời gian */
-
-
-.size-list li b {
-    color: #2c333b;
-    font-weight: 700;
-    min-width: 22px;
-    display: inline-block;
-    margin-right: 8px;
-    text-align: left;
+.size-list li:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.2); /* hồng neon nhẹ */
 }
 
-/* Responsive - Màn hình nhỏ - Hoạt ảnh động hơn */
-@media (max-width: 768px) {
-    body, html {
-        padding: 10px;
-    }
-    .welcome-page, .result-page {
-        padding: 20px;
-        gap: 20px;
-        border-radius: 12px; /* Giảm nhẹ bo góc cho cân đối */
-        animation: fadeInUp 0.4s ease-out; /* Giảm thời gian animation */
-    }
-    .logo {
-        max-width: 180px; /* Giảm logo */
-    }
-    .search-container input, .search-container .search-button {
-        padding: 12px 18px;
-        font-size: 0.95rem;
-        height: 48px;
-        border-radius: 10px;
-    }
-     .search-container .search-button:hover {
-        transform: translateY(-1px) scale(1.01); /* Giảm hiệu ứng hover */
-        box-shadow: 0 3px 6px rgba(0, 105, 217, 0.25);
-    }
-    .image-container {
-        max-height: 55vh;
-        border-radius: 10px;
-    }
-
-    .info-container {
-        gap: 18px;
-        padding: 15px 0;
-        font-size: 0.95rem;
-    }
-
-    .sizes, .price, .location {
-        width: 100%;
-        max-width: 300px;
-    }
-    
-    .sizes > p:first-child b {
-       font-size: 1rem;
-       margin-bottom: 10px;
-    }
-
-    .size-list li {
-        font-size: 0.9rem;
-        line-height: 1.5;
-        animation: fadeInUp 0.3s ease-out forwards; /* Giảm thời gian animation */
-    }
-    /* Stagger cho màn hình nhỏ */
-    .size-list li:nth-child(1) { animation-delay: 0.05s; }
-    .size-list li:nth-child(2) { animation-delay: 0.1s; }
-    .size-list li:nth-child(3) { animation-delay: 0.15s; }
-    /* ... */
+.size-list .sz {
+  min-width: 36px;
+  text-align: left;
+  letter-spacing: 0.3px;
+}
+.size-list .sep {
+  opacity: 0.6;
+  margin: 0 6px;
+}
+.size-list .qty {
+  color: var(--accent-pink);
+  font-weight: 800;
+  min-width: 28px;
+  text-align: right;
 }
 
-/* Responsive - Màn hình rất nhỏ - Hoạt ảnh động hơn */
-@media (max-width: 480px) {
-    .welcome-page, .result-page {
-        padding: 15px;
-        border-radius: 10px; /* Giữ bo góc */
-    }
-    .logo {
-        max-width: 150px;
-    }
-    .search-container input, .search-container .search-button {
-        font-size: 0.9rem;
-        height: 44px;
-        border-radius: 8px;
-    }
-     .search-container input {
-        padding: 10px 15px;
-    }
-    .image-container {
-        max-height: 50vh;
-        border-radius: 8px;
-    }
-    .info-container{
-        gap: 15px;
-    }
-    .sizes > p:first-child b,
-    #product-price, #location-info,
-    .size-list {
-        font-size: 0.9rem;
-    }
-    #product-price b, #location-info b,
-    .size-list li b {
-        font-size: 0.9rem;
-    }
+/* GIÁ — NỔI BẬT VỚI MÀU XANH NEON */
+#product-price {
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
+  padding: 16px;
+  border-radius: 20px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: white;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 92px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: transform 0.2s ease;
 }
-/* ===== Flat Design + Large Rounded Corners ===== */
-:root{
-    --r: 20px;            /* bo góc lớn hơn */
-    --line:#e5e7eb;
-    --bg:#f7f8fb;
-    --chip:#ffffff;
-  }
-  
-  /* Sheet bo tròn nhiều, không shadow nặng */
-  .sheet{
-    width:min(100%, 980px);
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:var(--r);
-    overflow:hidden;
-    box-shadow:none;
-    display:grid;
-    grid-template-rows:auto auto;
-  }
-  
-  /* Ảnh: góc bo tròn trên */
-  .image-container{
-    background:#f2f4f7;
-    display:grid; place-items:center;
-    padding:0;
-    aspect-ratio: 3/4;
-    border-top-left-radius:var(--r);
-    border-top-right-radius:var(--r);
-  }
-  .product-image{
-    width:100%; height:100%;
-    object-fit:contain;
-    border-radius:0; /* ảnh vuông trong khung bo */
-  }
-  
-  /* Info bo tròn dưới */
-  .info-container{
-    padding:18px 16px 14px;
-    border-top:1px solid var(--line);
-    display:grid;
-    grid-template-columns: 1fr auto;
-    gap:10px 14px;
-    border-bottom-left-radius:var(--r);
-    border-bottom-right-radius:var(--r);
-  }
-  
-  /* Size pill bo lớn hơn */
-  .size-list li{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:12px 14px;
-    border:1px solid var(--line);
-    border-radius:var(--r);
-    background:var(--chip);
-  }
-  
-  /* Thanh nhập bo lớn, phẳng */
-  .search-container{
-    width:min(100%, 980px);
-    position:sticky; bottom:0; z-index:10;
-    display:flex; gap:10px; align-items:center;
-    padding:12px 12px calc(12px + env(safe-area-inset-bottom,8px));
-    background:var(--bg);
-    border-radius:var(--r);
-    border:1px solid var(--line);
-  }
-  .search-container input{
-    flex:1;
-    height:48px;
-    border-radius:var(--r);
-    border:1px solid var(--line);
-    padding:0 14px;
-    font-size:1rem;
-  }
-  .search-container button{
-    height:48px;
-    border-radius:var(--r);
-    padding:0 18px;
-    font-weight:700;
-    border:none;
-    background:#2563eb;
-    color:#fff;
-  }
-  /* ===== Size pill gọn gàng, rõ ràng hơn ===== */
-.size-list{
-    grid-column:1 / -1;
-    list-style:none; margin:6px 0 0; padding:0;
-    display:grid; grid-template-columns: repeat(2, minmax(0,1fr));
-    gap:8px;
-  }
-  .size-list li{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:10px 14px;
-    border:1px solid #e6eaf0;
-    border-radius:20px; /* bo góc lớn để đồng bộ flat design */
-    background:#ffffff;
-    font-weight:600;
-    font-size:1rem;
-    color:#0f172a;
-  }
-  .size-list li span:first-child{
-    flex:0 0 auto;       /* size giữ nguyên chiều rộng chữ */
-  }
-  .size-list li span:last-child{
-    flex:0 0 auto;       /* số lượng cố định */
-    min-width: 28px;     /* đảm bảo không rung */
-    text-align:right;
-    color:#2563eb;       /* màu nhấn cho số lượng */
-  }
-  /* ===== Đưa GIÁ cùng hàng với SIZE, không lệch ===== */
+#product-price:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
 
-/* Sắp lưới theo vùng rõ ràng: sizes | price  ;  dưới là meta */
-.info-container{
-    display:grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "sizes price"
-      "meta  meta";
-    align-items:start;     /* canh đỉnh cho đồng hàng */
-    gap:12px 16px;
+/* ĐỊA ĐIỂM — MÀU XANH LÁ TƯƠI */
+#location-info {
+  background: var(--card-gradient-3);
+  padding: 16px;
+  border-radius: 20px;
+  color: var(--text);
+  font-size: 1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 92px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
   }
-  
-  /* Sizes chiếm cột trái, 2 cột pill */
-  .size-list{
-    grid-area:sizes;
-    list-style:none; margin:0; padding:0;
-    display:grid; grid-template-columns: repeat(2, minmax(0,1fr));
-    gap:10px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  .size-list li{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:12px 14px;
-    border:1px solid #e6eaf0; border-radius:20px; background:#fff;
-    font-weight:600; color:#0f172a;
-  }
-  .size-list li span:last-child{
-    min-width:28px; text-align:right; color:#2563eb; font-variation-settings:"wght" 700;
-  }
-  
-  /* GIÁ là 1 thẻ đồng phong cách, nằm cột phải */
-  #product-price{
-    grid-area:price;
-    margin:0;
-    padding:12px 16px;
-    border:1px solid #e6eaf0; border-radius:20px; background:#fff;
-    font-size:1.15rem; font-weight:800; color:#0f172a;
-    justify-self:end;   /* bám cạnh phải cột phải */
-    white-space:nowrap; /* không xuống dòng giá */
-  }
-  
-  /* Chất liệu/địa điểm chiếm trọn hàng dưới */
-  #location-info{
-    grid-area:meta; margin:2px 0 0; color:#64748b; font-size:.95rem;
-  }
-  
-  /* MOBILE rất hẹp: cho size 1 cột, giá nằm trên cùng bên phải */
-  @media (max-width: 390px){
-    .size-list{ grid-template-columns:1fr; }
-  }
-/* ===== Info: 3 cột bằng nhau ===== */
-.info-container{
-    display:grid;
-    grid-template-columns: 1fr 1fr 1fr; /* 3 phần bằng nhau */
-    align-items:start;
-    gap:12px;
-    padding:18px 16px;
-  }
-  
-  /* Trái: SIZE - SỐ LƯỢNG (dạng pill) */
-  .size-list{
-    grid-column:1;
-    list-style:none; margin:0; padding:0;
-    display:grid; grid-template-columns:1fr; gap:10px;
-  }
-  .size-list li{
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    padding:12px 14px; border:1px solid #e6eaf0; border-radius:20px; background:#fff;
-    font-weight:700; color:#0f172a;
-  }
-  .size-list .sz{letter-spacing:.3px}
-  .size-list .sep{opacity:.6}
-  .size-list .qty{color:#2563eb}
-  
-  /* Giữa: GIÁ (card đồng phong cách) */
-  #product-price{
-    grid-column:2;
-    margin:0; padding:12px 16px;
-    border:1px solid #e6eaf0; border-radius:20px; background:#fff;
-    font-size:1.2rem; font-weight:800; color:#0f172a;
-    display:flex; align-items:center; justify-content:center; /* căn giữa thật sự */
-  }
-  
-  /* Phải: VỊ TRÍ/KỆ (card đồng phong cách) */
-  #location-info{
-    grid-column:3;
-    margin:0; padding:12px 16px;
-    border:1px solid #e6eaf0; border-radius:20px; background:#fff;
-    color:#64748b; font-size:1rem;
-    display:flex; align-items:center; justify-content:center; text-align:center;
-  }
-  
-  /* Mobile rất hẹp (tuỳ chọn): xếp 3 hàng, giữ thứ tự Trái–Giữa–Phải */
-  @media (max-width: 380px){
-    .info-container{ grid-template-columns:1fr; }
-    #product-price, #location-info, .size-list{ grid-column:1; }
-  }
-  
-  
+}
