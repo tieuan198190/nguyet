@@ -7,16 +7,24 @@ console.log('[Main] Khởi tạo Data Parser Worker...');
 const dataParser = new Worker('data_parser.js');
 
 dataParser.onmessage = function(event) {
-    const { type, payload } = event.data;
-    console.log(`✅ [Main] Đã nhận dữ liệu ${type} đã xử lý từ Worker.`);
+    try {
+        const { type, payload } = event.data;
+        console.log(`✅ [Main] Đã nhận dữ liệu ${type} đã xử lý từ Worker.`);
 
-    if (type === 'product') {
-        productData = payload; // Vẫn nhận, nhưng không dùng
-    } else if (type === 'location') {
-        locationData = payload;
+        if (type === 'product') {
+            productData = Array.isArray(payload) ? payload : []; // Vẫn nhận, nhưng không dùng
+        } else if (type === 'location') {
+            locationData = Array.isArray(payload) ? payload : [];
+            console.log(`✅ [Main] Đã cập nhật locationData với ${locationData.length} items`);
+        }
+        
+        // Chỉ refresh nếu DOM đã sẵn sàng
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            refreshCurrentSearch();
+        }
+    } catch (err) {
+        console.error('[Main] Lỗi khi xử lý message từ Worker:', err);
     }
-    
-    refreshCurrentSearch();
 };
 
 dataParser.onerror = error => console.error('[Main] Lỗi từ Worker:', error);
@@ -49,59 +57,259 @@ async function fetchDataWithCacheCheck(url, storageKey, dataType) {
 // --- PHẦN 2: SỬA HÀM TÌM KIẾM — PRODUCT DÙNG WEBHOOK, LOCATION DÙNG S3 ---
 
 const WEBHOOK_URL = 'https://n8n-hongnhung198198-u40833.vm.elestio.app/webhook/22aa9e0d-0baa-48db-8f14-fe2da449de38';
+const WEBHOOK_TIMEOUT = 10000; // 10 giây
 
-async function searchProduct() {
+// Hàm gọi webhook với timeout và retry
+async function callWebhook(productCode, retries = 2) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT);
+
+  try {
+    console.log(`🔗 [Webhook] Đang gọi webhook...`);
+    console.log(`   URL: ${WEBHOOK_URL}`);
+    console.log(`   Mã sản phẩm: ${productCode}`);
+    console.log(`   Body:`, JSON.stringify({ productCode }));
+    
+    const requestBody = { productCode };
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    console.log(`📥 [Webhook] Response status: ${res.status} ${res.statusText}`);
+    console.log(`📥 [Webhook] Response headers:`, Object.fromEntries(res.headers.entries()));
+
+    if (!res.ok) {
+      let errorText = '';
+      try {
+        errorText = await res.text();
+        console.error(`❌ [Webhook] HTTP Error ${res.status}:`, errorText);
+      } catch (e) {
+        errorText = res.statusText;
+        console.error(`❌ [Webhook] HTTP Error ${res.status}:`, errorText);
+      }
+      throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
+    }
+
+    // Kiểm tra content type trước khi parse JSON
+    const contentType = res.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        const text = await res.text();
+        console.log(`📦 [Webhook] Response text:`, text);
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        console.error(`❌ [Webhook] Lỗi parse JSON:`, parseErr);
+        throw new Error('Server trả về dữ liệu không hợp lệ (không phải JSON)');
+      }
+    } else {
+      const text = await res.text();
+      console.warn(`⚠️ [Webhook] Response không phải JSON, content-type: ${contentType}`);
+      console.log(`📦 [Webhook] Response text:`, text);
+      // Thử parse như JSON nếu có thể
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Server trả về format không hỗ trợ: ${contentType}`);
+      }
+    }
+    
+    console.log(`✅ [Webhook] Dữ liệu đã parse:`, data);
+    
+    return data;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    
+    if (err.name === 'AbortError') {
+      console.error('[Webhook] Timeout - Không nhận được phản hồi sau 10 giây');
+      throw new Error('Timeout: Webhook không phản hồi. Vui lòng thử lại.');
+    }
+    
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+      console.error('[Webhook] Lỗi kết nối mạng:', err);
+      throw new Error('Không thể kết nối đến server. Kiểm tra kết nối internet.');
+    }
+
+    if (err.message.includes('CORS')) {
+      console.error('[Webhook] Lỗi CORS:', err);
+      throw new Error('Lỗi CORS: Server không cho phép truy cập từ trình duyệt này.');
+    }
+
+    // Retry logic
+    if (retries > 0) {
+      console.log(`[Webhook] Thử lại... (còn ${retries} lần)`);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 1 giây
+      return callWebhook(productCode, retries - 1);
+    }
+
+    throw err;
+  }
+}
+
+// Expose searchProduct globally để có thể gọi từ HTML
+window.searchProduct = async function() {
   const inputEl = document.getElementById('productCode');
+  if (!inputEl) {
+    console.error('[Search] Không tìm thấy input element');
+    return;
+  }
+  
   const productCode = inputEl.value.trim().toUpperCase();
-  if (!productCode) return;
+  if (!productCode) {
+    console.warn('[Search] Mã sản phẩm trống');
+    return;
+  }
 
-  // 1. Lấy location từ locationData (giữ nguyên logic cũ)
-  const locationResults = locationData.filter(l => l.code === productCode);
+  // Hiển thị loading
+  showLoading(true);
+
+  // 1. Lấy location từ locationData (đảm bảo locationData là array)
+  const locationResults = (Array.isArray(locationData) ? locationData : []).filter(l => l && l.code === productCode);
 
   // 2. Gọi webhook để lấy product
   let productResults = [];
+  let errorMessage = null;
+  
   try {
-    const res = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productCode })
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data.found) {
-        // Chuyển đổi định dạng webhook → giống productData cũ
+    const data = await callWebhook(productCode);
+    console.log(`📊 [Search] Dữ liệu nhận được từ webhook:`, data);
+    
+    // Xử lý nhiều format response có thể có
+    if (data) {
+      // Format 1: { found: true, sizes: [...], imageUrl: "...", price: ... }
+      if (data.found === true && Array.isArray(data.sizes)) {
         productResults = data.sizes.map(size => ({
           parentCode: productCode,
-          size: size.size,
-          stock: size.stock,
-          imageUrl: data.imageUrl,
-          price: data.price
+          size: size.size || size.Size || size.name,
+          stock: parseInt(size.stock || size.Stock || size.quantity || 0),
+          imageUrl: data.imageUrl || data.image || data.image_url || '',
+          price: parseFloat(data.price || data.Price || data.priceValue || 0)
         }));
+        console.log(`✅ [Search] Tìm thấy ${productResults.length} size cho sản phẩm ${productCode}`);
       }
+      // Format 2: Array trực tiếp
+      else if (Array.isArray(data) && data.length > 0) {
+        productResults = data.map(item => ({
+          parentCode: productCode,
+          size: item.size || item.Size || item.name,
+          stock: parseInt(item.stock || item.Stock || item.quantity || 0),
+          imageUrl: item.imageUrl || item.image || item.image_url || '',
+          price: parseFloat(item.price || item.Price || item.priceValue || 0)
+        }));
+        console.log(`✅ [Search] Tìm thấy ${productResults.length} items (format array)`);
+      }
+      // Format 3: Object với data bên trong
+      else if (data.data && Array.isArray(data.data)) {
+        productResults = data.data.map(item => ({
+          parentCode: productCode,
+          size: item.size || item.Size || item.name,
+          stock: parseInt(item.stock || item.Stock || item.quantity || 0),
+          imageUrl: data.imageUrl || data.image || item.imageUrl || '',
+          price: parseFloat(data.price || data.Price || item.price || 0)
+        }));
+        console.log(`✅ [Search] Tìm thấy ${productResults.length} items (format data wrapper)`);
+      }
+      else {
+        console.log(`ℹ️ [Search] Webhook trả về nhưng không có dữ liệu sản phẩm hợp lệ`);
+        console.log(`   Format nhận được:`, typeof data, Array.isArray(data) ? 'Array' : 'Object');
+      }
+    } else {
+      console.log(`ℹ️ [Search] Webhook trả về null/undefined`);
     }
   } catch (err) {
-    console.error('Lỗi gọi webhook:', err);
-    // productResults giữ là [] → hiển thị "không tìm thấy"
+    console.error('❌ [Search] Lỗi khi gọi webhook:', err);
+    errorMessage = err.message || 'Không thể kết nối đến webhook';
+  } finally {
+    showLoading(false);
   }
 
-  // 3. Hiển thị kết quả (giữ nguyên hàm cũ)
-  displayResults(productResults, locationResults, productCode);
+  // 3. Hiển thị kết quả
+  displayResults(productResults, locationResults, productCode, errorMessage);
 
   // 4. Xoá input & focus (giữ nguyên)
   inputEl.value = '';
   inputEl.focus();
 }
 
+// Hàm hiển thị/ẩn loading indicator
+function showLoading(show) {
+  try {
+    const priceEl = document.getElementById('product-price');
+    const sizeListEl = document.getElementById('size-list');
+    
+    if (!priceEl || !sizeListEl) {
+      console.warn('[Loading] Không tìm thấy elements để hiển thị loading');
+      return;
+    }
+    
+    if (show) {
+      priceEl.textContent = 'Đang tìm kiếm...';
+      sizeListEl.innerHTML = '<li style="text-align: center; color: var(--text-secondary);">Đang tải dữ liệu...</li>';
+    }
+  } catch (err) {
+    console.error('[Loading] Lỗi khi hiển thị loading:', err);
+  }
+}
+
 // --- GIỮ NGUYÊN HOÀN TOÀN HÀM displayResults() ---
 
-function displayResults(productResults, locationResults, productCode) {
+function displayResults(productResults, locationResults, productCode, errorMessage = null) {
+  // Đảm bảo các tham số là hợp lệ
+  productResults = Array.isArray(productResults) ? productResults : [];
+  locationResults = Array.isArray(locationResults) ? locationResults : [];
+  productCode = productCode || 'N/A';
+  
   const imageEl = document.getElementById('product-image');
   const priceEl = document.getElementById('product-price');
   const locationEl = document.getElementById('location-info');
   const sizeListEl = document.getElementById('size-list');
 
+  // Kiểm tra elements tồn tại
+  if (!imageEl || !priceEl || !locationEl || !sizeListEl) {
+    console.error('[DisplayResults] Một hoặc nhiều elements không tồn tại');
+    return;
+  }
+
   sizeListEl.innerHTML = '';
+
+  // Hiển thị lỗi nếu có
+  if (errorMessage) {
+    imageEl.src = 'comap_logo.jpg';
+    priceEl.textContent = 'Lỗi kết nối';
+    priceEl.style.color = '#ef4444';
+    
+    const li = document.createElement('li');
+    li.style.cssText = 'color: #ef4444; text-align: center; padding: 20px; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3);';
+    li.innerHTML = `
+      <strong>⚠️ Lỗi kết nối webhook</strong><br>
+      <small style="font-size: 0.9rem; margin-top: 8px; display: block;">${errorMessage}</small>
+    `;
+    sizeListEl.appendChild(li);
+    
+    // Reset màu sau 3 giây
+    setTimeout(() => {
+      priceEl.style.color = '';
+    }, 3000);
+    
+    if (locationResults.length > 0) {
+      locationEl.textContent = locationResults.map(l => `${l.key} - ${l.value}`).join('; ');
+    } else {
+      locationEl.textContent = 'Không có vị trí';
+    }
+    return;
+  }
+
+  // Reset màu giá
+  priceEl.style.color = '';
 
   if (productResults.length > 0) {
       imageEl.src = productResults[0].imageUrl || 'comap_logo.jpg';
@@ -120,6 +328,7 @@ function displayResults(productResults, locationResults, productCode) {
       } else {
           const li = document.createElement('li');
           li.textContent = 'Sản phẩm này đã hết hàng';
+          li.style.cssText = 'text-align: center; color: var(--text-secondary);';
           sizeListEl.appendChild(li);
       }
   } else {
@@ -127,6 +336,7 @@ function displayResults(productResults, locationResults, productCode) {
       priceEl.textContent = 'Không có giá';
       const li = document.createElement('li');
       li.textContent = `Không tìm thấy sản phẩm ${productCode}`;
+      li.style.cssText = 'text-align: center; color: var(--text-secondary);';
       sizeListEl.appendChild(li);
   }
 
@@ -148,10 +358,20 @@ function goBack() {
 }
 
 function refreshCurrentSearch() {
-    const resultPageVisible = document.getElementById("result-page").style.display === "block";
-    if (resultPageVisible) {
-        console.log("[Main] Dữ liệu nền đã thay đổi, tự động làm mới kết quả...");
-        searchProduct();
+    try {
+        const resultPage = document.getElementById("result-page");
+        if (!resultPage) return;
+        
+        const resultPageVisible = resultPage.style.display === "block";
+        if (resultPageVisible) {
+            console.log("[Main] Dữ liệu nền đã thay đổi, tự động làm mới kết quả...");
+            const inputEl = document.getElementById('productCode');
+            if (inputEl && inputEl.value.trim()) {
+                searchProduct();
+            }
+        }
+    } catch (err) {
+        console.error('[Refresh] Lỗi khi refresh:', err);
     }
 }
 
@@ -166,8 +386,49 @@ function periodicUpdate() {
     fetchDataWithCacheCheck(locationUrl, 'location', 'location');
 }
 
+// Hàm test webhook connection (có thể gọi từ console)
+window.testWebhook = async function(testCode = 'TEST') {
+    console.log('🧪 [Test] Bắt đầu test webhook...');
+    console.log('🧪 [Test] URL:', WEBHOOK_URL);
+    console.log('🧪 [Test] Mã test:', testCode);
+    
+    try {
+        const startTime = Date.now();
+        const data = await callWebhook(testCode);
+        const duration = Date.now() - startTime;
+        
+        console.log('✅ [Test] Webhook hoạt động tốt!');
+        console.log('✅ [Test] Thời gian phản hồi:', duration + 'ms');
+        console.log('✅ [Test] Dữ liệu nhận được:', data);
+        return { success: true, data, duration };
+    } catch (err) {
+        console.error('❌ [Test] Webhook lỗi:', err);
+        console.error('❌ [Test] Chi tiết:', {
+            message: err.message,
+            name: err.name,
+            stack: err.stack
+        });
+        return { success: false, error: err.message };
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('backButton').addEventListener('click', goBack);
-    periodicUpdate();
-    setInterval(periodicUpdate, 120000);
+    try {
+        const backButton = document.getElementById('backButton');
+        if (backButton) {
+            backButton.addEventListener('click', goBack);
+        } else {
+            console.warn('[Init] Không tìm thấy backButton');
+        }
+        
+        periodicUpdate();
+        setInterval(periodicUpdate, 120000);
+        
+        // Log thông tin webhook khi khởi động
+        console.log('🔗 [Init] Webhook URL:', WEBHOOK_URL);
+        console.log('💡 [Init] Để test webhook, chạy: testWebhook("MÃ_SẢN_PHẨM") trong console');
+        console.log('📦 [Init] locationData đã được khởi tạo:', Array.isArray(locationData));
+    } catch (err) {
+        console.error('[Init] Lỗi khi khởi tạo:', err);
+    }
 });

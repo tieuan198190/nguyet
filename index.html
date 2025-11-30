@@ -3,84 +3,222 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Search Product</title>
+  <meta name="description" content="Tìm kiếm thông tin sản phẩm - CÔ MẬP FASHION">
+  <title>Tìm Kiếm Sản Phẩm - CÔ MẬP FASHION</title>
+  
+  <!-- Preload font để tải nhanh hơn -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Welcome Page -->
   <div class="welcome-page" id="welcome-page">
     <div class="logo-container">
-      <img src="comap_logo.jpg" alt="CÔ MẬP FASHION NÈ" class="logo">
+      <img src="comap_logo.jpg" alt="CÔ MẬP FASHION NÈ" class="logo" loading="eager">
     </div>
     <div class="search-container">
-      <input type="text" id="welcomeProductCode" placeholder="Nhập mã sản phẩm">
-      <button class="search-button" onclick="goToResultPage()">Tìm</button>
+      <input 
+        type="text" 
+        id="welcomeProductCode" 
+        placeholder="Nhập mã sản phẩm"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Nhập mã sản phẩm để tìm kiếm"
+      >
+      <button 
+        class="search-button" 
+        onclick="goToResultPage()"
+        aria-label="Tìm kiếm sản phẩm"
+      >
+        <span>Tìm</span>
+      </button>
     </div>
   </div>
 
+  <!-- Result Page -->
   <div class="result-page" id="result-page" style="display: none;">
     <div class="image-container">
-      <img src="comap_logo.jpg" alt="Product Image" id="product-image" class="product-image">
+      <img 
+        src="comap_logo.jpg" 
+        alt="Hình ảnh sản phẩm" 
+        id="product-image" 
+        class="product-image"
+        loading="lazy"
+      >
     </div>
     <div class="info-container">
       <div class="sizes">
-        <ul id="size-list" class="size-list"></ul>
+        <ul id="size-list" class="size-list" aria-label="Danh sách size và số lượng"></ul>
       </div>
-      <div class="price">
-        <p id="product-price">Không có giá</p>
-      </div>
-      <div class="location">
-        <p id="location-info">Không có vị trí</p>
+      <div class="price-location">
+        <div class="price">
+          <p id="product-price" aria-label="Giá sản phẩm">Không có giá</p>
+        </div>
+        <div class="location">
+          <p id="location-info" aria-label="Vị trí sản phẩm">Không có vị trí</p>
+        </div>
       </div>
     </div>
     <div class="search-container">
-      <input type="text" id="productCode" placeholder="Nhập mã sản phẩm khác">
-      <button class="search-button" onclick="searchProduct()">Tìm</button>
+      <input 
+        type="text" 
+        id="productCode" 
+        placeholder="Nhập mã sản phẩm khác"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Nhập mã sản phẩm khác để tìm kiếm"
+      >
+      <button 
+        class="search-button" 
+        onclick="searchProduct()"
+        aria-label="Tìm kiếm sản phẩm"
+      >
+        <span>Tìm</span>
+      </button>
     </div>
-    <button id="backButton" class="back-button">Quay lại</button>
+    <button 
+      id="backButton" 
+      class="back-button"
+      aria-label="Quay lại trang chủ"
+    >
+      ← Quay lại
+    </button>
   </div>
 
   <script src="app.js"></script>
 
   <script>
+    // Khởi tạo các biến
     const welcomeInput = document.getElementById("welcomeProductCode");
     const resultInput = document.getElementById("productCode");
 
+    // Hàm hiển thị thông báo thay vì alert
+    function showNotification(message, type = 'info') {
+      // Tạo notification element
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'error' ? '#ef4444' : '#667eea'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+        font-weight: 500;
+        max-width: 300px;
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Tự động xóa sau 3 giây
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    // Thêm CSS animation cho notification
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Xử lý sự kiện khi DOM đã load
     document.addEventListener("DOMContentLoaded", function () {
-      welcomeInput.focus();
-      welcomeInput.addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          goToResultPage();
-        }
-      });
+      // Focus vào input khi trang load
+      if (welcomeInput) {
+        welcomeInput.focus();
+        
+        // Xử lý Enter key
+        welcomeInput.addEventListener("keydown", event => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            goToResultPage();
+          }
+        });
 
-      let welcomeTimeout = null;
-      welcomeInput.addEventListener("input", () => {
-        clearTimeout(welcomeTimeout);
-        welcomeTimeout = setTimeout(() => {
-          if (welcomeInput.value.trim() !== "") goToResultPage();
-        }, 500);
-      });
+        // Auto search sau khi nhập (debounce)
+        let welcomeTimeout = null;
+        welcomeInput.addEventListener("input", () => {
+          clearTimeout(welcomeTimeout);
+          welcomeTimeout = setTimeout(() => {
+            if (welcomeInput.value.trim() !== "") {
+              goToResultPage();
+            }
+          }, 500);
+        });
+      }
 
-      resultInput.addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          searchProduct();
-        }
-      });
+      // Xử lý Enter key cho result input
+      if (resultInput) {
+        resultInput.addEventListener("keydown", event => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            if (typeof window.searchProduct === 'function') {
+              window.searchProduct();
+            }
+          }
+        });
+      }
     });
 
+    // Hàm chuyển đến trang kết quả
     function goToResultPage() {
-      const welcomeProductCode = welcomeInput.value.trim();
+      if (!welcomeInput || !resultInput) {
+        console.error('Input elements not found');
+        return;
+      }
+
+      const welcomeProductCode = welcomeInput.value.trim().toUpperCase();
+      
       if (welcomeProductCode) {
         resultInput.value = welcomeProductCode;
         document.getElementById('welcome-page').style.display = 'none';
         document.getElementById('result-page').style.display = 'block';
-        searchProduct();
+        
+        // Focus vào result input và gọi search
+        setTimeout(() => {
+          resultInput.focus();
+          if (typeof window.searchProduct === 'function') {
+            window.searchProduct();
+          }
+        }, 100);
       } else {
-        alert("Vui lòng nhập mã sản phẩm!");
+        showNotification("Vui lòng nhập mã sản phẩm!", 'error');
+        welcomeInput.focus();
       }
     }
+
+    // Expose function globally
+    window.goToResultPage = goToResultPage;
   </script>
 </body>
 </html>
