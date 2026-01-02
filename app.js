@@ -172,12 +172,10 @@ window.searchProduct = async function() {
   // Hiển thị loading
   showLoading(true);
 
-  // 1. Lấy location từ locationData (đảm bảo locationData là array)
-  const locationResults = (Array.isArray(locationData) ? locationData : []).filter(l => l && l.code === productCode);
-
-  // 2. Gọi webhook để lấy product
+  // 1. Gọi webhook để lấy product + location
   let productResults = [];
   let errorMessage = null;
+  let locationText = '';
   
   try {
     const data = await callWebhook(productCode);
@@ -185,40 +183,63 @@ window.searchProduct = async function() {
     
     // Xử lý nhiều format response có thể có
     if (data) {
-      // Format 1: { found: true, sizes: [...], imageUrl: "...", price: ... }
-      if (data.found === true && Array.isArray(data.sizes)) {
-        productResults = data.sizes.map(size => ({
+      const candidates = [];
+      if (Array.isArray(data)) {
+        data.forEach(entry => {
+          if (entry && Array.isArray(entry.data)) {
+            entry.data.forEach(item => candidates.push(item));
+          } else {
+            candidates.push(entry);
+          }
+        });
+      } else if (data.data && Array.isArray(data.data)) {
+        data.data.forEach(item => candidates.push(item));
+      } else {
+        candidates.push(data);
+      }
+
+      const sizeItems = [];
+      let fallbackImage = '';
+      let fallbackPrice = null;
+
+      candidates.forEach(item => {
+        if (!item) return;
+
+        if (!locationText && (item.chatlieu || item.Chatlieu || item.location)) {
+          locationText = item.chatlieu || item.Chatlieu || item.location;
+        }
+
+        fallbackImage = fallbackImage || item.imageUrl || item.image || item.image_url || '';
+        if (fallbackPrice === null && (item.price || item.Price || item.priceValue)) {
+          fallbackPrice = parseFloat(item.price || item.Price || item.priceValue || 0);
+        }
+
+        if (item.found === true && Array.isArray(item.sizes)) {
+          productResults = item.sizes.map(size => ({
+            parentCode: productCode,
+            size: size.size || size.Size || size.name,
+            stock: parseInt(size.stock || size.Stock || size.quantity || 0),
+            imageUrl: item.imageUrl || item.image || item.image_url || fallbackImage,
+            price: parseFloat(item.price || item.Price || item.priceValue || fallbackPrice || 0)
+          }));
+        } else if (item.size || item.Size || item.name) {
+          sizeItems.push(item);
+        }
+      });
+
+      if (productResults.length === 0 && sizeItems.length > 0) {
+        productResults = sizeItems.map(item => ({
           parentCode: productCode,
-          size: size.size || size.Size || size.name,
-          stock: parseInt(size.stock || size.Stock || size.quantity || 0),
-          imageUrl: data.imageUrl || data.image || data.image_url || '',
-          price: parseFloat(data.price || data.Price || data.priceValue || 0)
+          size: item.size || item.Size || item.name,
+          stock: parseInt(item.stock || item.Stock || item.quantity || 0),
+          imageUrl: item.imageUrl || item.image || item.image_url || fallbackImage,
+          price: parseFloat(item.price || item.Price || item.priceValue || fallbackPrice || 0)
         }));
+      }
+
+      if (productResults.length > 0) {
         console.log(`✅ [Search] Tìm thấy ${productResults.length} size cho sản phẩm ${productCode}`);
-      }
-      // Format 2: Array trực tiếp
-      else if (Array.isArray(data) && data.length > 0) {
-        productResults = data.map(item => ({
-          parentCode: productCode,
-          size: item.size || item.Size || item.name,
-          stock: parseInt(item.stock || item.Stock || item.quantity || 0),
-          imageUrl: item.imageUrl || item.image || item.image_url || '',
-          price: parseFloat(item.price || item.Price || item.priceValue || 0)
-        }));
-        console.log(`✅ [Search] Tìm thấy ${productResults.length} items (format array)`);
-      }
-      // Format 3: Object với data bên trong
-      else if (data.data && Array.isArray(data.data)) {
-        productResults = data.data.map(item => ({
-          parentCode: productCode,
-          size: item.size || item.Size || item.name,
-          stock: parseInt(item.stock || item.Stock || item.quantity || 0),
-          imageUrl: data.imageUrl || data.image || item.imageUrl || '',
-          price: parseFloat(data.price || data.Price || item.price || 0)
-        }));
-        console.log(`✅ [Search] Tìm thấy ${productResults.length} items (format data wrapper)`);
-      }
-      else {
+      } else {
         console.log(`ℹ️ [Search] Webhook trả về nhưng không có dữ liệu sản phẩm hợp lệ`);
         console.log(`   Format nhận được:`, typeof data, Array.isArray(data) ? 'Array' : 'Object');
       }
@@ -232,8 +253,8 @@ window.searchProduct = async function() {
     showLoading(false);
   }
 
-  // 3. Hiển thị kết quả
-  displayResults(productResults, locationResults, productCode, errorMessage);
+  // 2. Hiển thị kết quả
+  displayResults(productResults, locationText, productCode, errorMessage);
 
   // 4. Xoá input & focus (giữ nguyên)
   inputEl.value = '';
@@ -262,10 +283,9 @@ function showLoading(show) {
 
 // --- GIỮ NGUYÊN HOÀN TOÀN HÀM displayResults() ---
 
-function displayResults(productResults, locationResults, productCode, errorMessage = null) {
+function displayResults(productResults, locationText, productCode, errorMessage = null) {
   // Đảm bảo các tham số là hợp lệ
   productResults = Array.isArray(productResults) ? productResults : [];
-  locationResults = Array.isArray(locationResults) ? locationResults : [];
   productCode = productCode || 'N/A';
   
   const imageEl = document.getElementById('product-image');
@@ -300,11 +320,7 @@ function displayResults(productResults, locationResults, productCode, errorMessa
       priceEl.style.color = '';
     }, 3000);
     
-    if (locationResults.length > 0) {
-      locationEl.textContent = locationResults.map(l => `${l.key} - ${l.value}`).join('; ');
-    } else {
-      locationEl.textContent = 'Không có vị trí';
-    }
+    locationEl.textContent = locationText || 'Không có vị trí';
     return;
   }
 
@@ -340,11 +356,7 @@ function displayResults(productResults, locationResults, productCode, errorMessa
       sizeListEl.appendChild(li);
   }
 
-  if (locationResults.length > 0) {
-      locationEl.textContent = locationResults.map(l => `${l.key} - ${l.value}`).join('; ');
-  } else {
-      locationEl.textContent = 'Không có vị trí';
-  }
+  locationEl.textContent = locationText || 'Không có vị trí';
 }
 
 // --- GIỮ NGUYÊN CÁC HÀM KHÁC: goBack, refreshCurrentSearch, v.v. ---
@@ -378,12 +390,7 @@ function refreshCurrentSearch() {
 // --- PHẦN 3: KHỞI TẠO — CHỈ TẢI LOCATION, BỎ TẢI PRODUCT ---
 
 function periodicUpdate() {
-    // const productUrl = "..."; // 🚫 KHÔNG CẦN TẢI PRODUCT TỪ S3 NỮA
-    const locationUrl = "https://productdata19971998.s3.ap-southeast-1.amazonaws.com/ma_chatlieu2.txt";
-    
     console.log('--- Bắt đầu chu kỳ kiểm tra cập nhật ---');
-    // fetchDataWithCacheCheck(productUrl, 'product', 'product'); // 🚫 COMMENT DÒNG NÀY
-    fetchDataWithCacheCheck(locationUrl, 'location', 'location');
 }
 
 // Hàm test webhook connection (có thể gọi từ console)
