@@ -1,4 +1,4 @@
-// --- PHẦN 1: GIỮ NGUYÊN HOÀN TOÀN PHẦN WORKER VÀ LOCATION ---
+// --- PHẦN 1: GIỮ NGUYÊN PHẦN WORKER ---
 
 let productData = []; // Vẫn khai báo để không lỗi, nhưng KHÔNG DÙNG
 let locationData = [];
@@ -170,10 +170,10 @@ window.searchProduct = async function() {
   // Hiển thị loading
   showLoading(true);
 
-  // 1. Gọi webhook để lấy product + location
+  // 1. Gọi webhook để lấy product + chat_lieu
   let productResults = [];
   let errorMessage = null;
-  let locationText = '';
+  let materialText = '';
   
   try {
     const data = await callWebhook(productCode);
@@ -203,8 +203,8 @@ window.searchProduct = async function() {
       candidates.forEach(item => {
         if (!item) return;
 
-        if (!locationText && (item.chatlieu || item.Chatlieu || item.location)) {
-          locationText = item.chatlieu || item.Chatlieu || item.location;
+        if (!materialText && (item.chat_lieu || item.chatlieu || item.Chatlieu)) {
+          materialText = item.chat_lieu || item.chatlieu || item.Chatlieu;
         }
 
         fallbackImage = fallbackImage || item.imageUrl || item.image || item.image_url || '';
@@ -252,7 +252,7 @@ window.searchProduct = async function() {
   }
 
   // 2. Hiển thị kết quả
-  displayResults(productResults, locationText, productCode, errorMessage);
+  displayResults(productResults, materialText, productCode, errorMessage);
 
   // 4. Xoá input & focus (giữ nguyên)
   inputEl.value = '';
@@ -281,7 +281,7 @@ function showLoading(show) {
 
 // --- GIỮ NGUYÊN HOÀN TOÀN HÀM displayResults() ---
 
-function displayResults(productResults, locationText, productCode, errorMessage = null) {
+function displayResults(productResults, materialText, productCode, errorMessage = null) {
   // Đảm bảo các tham số là hợp lệ
   productResults = Array.isArray(productResults) ? productResults : [];
   productCode = productCode || 'N/A';
@@ -318,7 +318,7 @@ function displayResults(productResults, locationText, productCode, errorMessage 
       priceEl.style.color = '';
     }, 3000);
     
-    locationEl.textContent = locationText || 'Không có vị trí';
+    locationEl.textContent = materialText || 'Không có chất liệu';
     return;
   }
 
@@ -354,7 +354,7 @@ function displayResults(productResults, locationText, productCode, errorMessage 
       sizeListEl.appendChild(li);
   }
 
-  locationEl.textContent = locationText || 'Không có vị trí';
+  locationEl.textContent = materialText || 'Không có chất liệu';
 }
 
 // --- GIỮ NGUYÊN CÁC HÀM KHÁC: goBack, refreshCurrentSearch, v.v. ---
