@@ -54,7 +54,7 @@ async function fetchDataWithCacheCheck(url, storageKey, dataType) {
     }
 }
 
-const WEBHOOK_URL = 'https://vmi3164630.contaboserver.net/webhook/livestream_update ';
+const WEBHOOK_URL = 'https://vmi3164630.contaboserver.net/webhook/livestream_update';
 const WEBHOOK_TIMEOUT = 10000; // 10 giây
 
 // Hàm gọi webhook với timeout và retry
