@@ -2,91 +2,71 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Tìm kiếm thông tin sản phẩm - CÔ MẬP FASHION">
   <title>Tìm Kiếm Sản Phẩm - CÔ MẬP FASHION</title>
-  
+
   <!-- Preload font để tải nhanh hơn -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Welcome Page -->
-  <div class="welcome-page" id="welcome-page">
-    <div class="logo-container">
-      <img src="comap_logo.jpg" alt="CÔ MẬP FASHION NÈ" class="logo" loading="eager">
-    </div>
-    <div class="search-container">
-      <input 
-        type="text" 
-        id="welcomeProductCode" 
-        placeholder="Nhập mã sản phẩm"
-        autocomplete="off"
-        spellcheck="false"
-        aria-label="Nhập mã sản phẩm để tìm kiếm"
-      >
-      <button 
-        class="search-button" 
-        onclick="goToResultPage()"
-        aria-label="Tìm kiếm sản phẩm"
-      >
-        <span>Tìm</span>
-      </button>
-    </div>
-  </div>
+  <!-- Ô nhập vô hình: nhận tín hiệu từ máy quét QR, người dùng không thấy và không cần chạm -->
+  <input
+    type="text"
+    id="welcomeProductCode"
+    class="scanner-input"
+    autocomplete="off"
+    spellcheck="false"
+    aria-label="Ô nhận mã từ máy quét QR"
+  >
+  <input
+    type="text"
+    id="productCode"
+    class="scanner-input"
+    autocomplete="off"
+    spellcheck="false"
+    aria-label="Ô nhận mã từ máy quét QR"
+  >
+  <button id="backButton" class="scanner-input" aria-hidden="true" tabindex="-1"></button>
 
-  <!-- Result Page -->
-  <div class="result-page" id="result-page" style="display: none;">
+  <!-- Màn hình chờ -->
+  <main class="welcome-page" id="welcome-page">
+    <section class="hero">
+      <img src="comap_logo.jpg" alt="CÔ MẬP FASHION" class="logo" loading="eager">
+      <h1 class="hero-title">Quét mã QR</h1>
+      <p class="hero-subtitle">Đưa mã QR trên sản phẩm vào máy quét<br>để xem giá, chất liệu và size còn hàng.</p>
+      <div class="scan-indicator">
+        <span class="scan-dot"></span>
+        <span>Sẵn sàng quét</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Màn hình kết quả -->
+  <main class="result-page" id="result-page" style="display: none;">
     <div class="image-container">
-      <img 
-        src="comap_logo.jpg" 
-        alt="Hình ảnh sản phẩm" 
-        id="product-image" 
+      <img
+        src="comap_logo.jpg"
+        alt="Hình ảnh sản phẩm"
+        id="product-image"
         class="product-image"
         loading="lazy"
       >
     </div>
-    <div class="info-container">
-      <div class="sizes">
-        <ul id="size-list" class="size-list" aria-label="Danh sách size và số lượng"></ul>
+
+    <div class="info-panel">
+      <div class="info-head">
+        <h1 class="product-title" id="product-title">&nbsp;</h1>
+        <p class="product-price" id="product-price" aria-label="Giá sản phẩm">Không có giá</p>
       </div>
-      <div class="price-location">
-        <div class="price">
-          <p id="product-price" aria-label="Giá sản phẩm">Không có giá</p>
-        </div>
-        <div class="location">
-          <p id="location-info" aria-label="Chất liệu sản phẩm">Không có chất liệu</p>
-        </div>
-      </div>
+      <p class="product-material" id="location-info" aria-label="Chất liệu sản phẩm">Không có chất liệu</p>
+      <ul id="size-list" class="size-list" aria-label="Danh sách size và số lượng"></ul>
     </div>
-    <div class="search-container">
-      <input 
-        type="text" 
-        id="productCode" 
-        placeholder="Nhập mã sản phẩm khác"
-        autocomplete="off"
-        spellcheck="false"
-        aria-label="Nhập mã sản phẩm khác để tìm kiếm"
-      >
-      <button 
-        class="search-button" 
-        onclick="searchProduct()"
-        aria-label="Tìm kiếm sản phẩm"
-      >
-        <span>Tìm</span>
-      </button>
-    </div>
-    <button 
-      id="backButton" 
-      class="back-button"
-      aria-label="Quay lại trang chủ"
-    >
-      ← Quay lại
-    </button>
-  </div>
+  </main>
 
   <script src="app.js"></script>
 
@@ -103,24 +83,27 @@
       notification.textContent = message;
       notification.style.cssText = `
         position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'error' ? '#ef4444' : '#667eea'};
+        top: 3vh;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'error' ? '#ff3b30' : '#0071e3'};
         color: white;
-        padding: 16px 24px;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        padding: 1.5vh 3vh;
+        border-radius: 980px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         z-index: 10000;
-        animation: slideIn 0.3s ease-out;
+        animation: dropIn 0.3s ease-out;
         font-weight: 500;
-        max-width: 300px;
+        font-size: 2vh;
+        max-width: 80vw;
+        text-align: center;
       `;
-      
+
       document.body.appendChild(notification);
-      
+
       // Tự động xóa sau 3 giây
       setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease-out';
+        notification.style.animation = 'dropOut 0.3s ease-out';
         setTimeout(() => notification.remove(), 300);
       }, 3000);
     }
@@ -128,23 +111,23 @@
     // Thêm CSS animation cho notification
     const style = document.createElement('style');
     style.textContent = `
-      @keyframes slideIn {
+      @keyframes dropIn {
         from {
-          transform: translateX(100%);
+          transform: translateX(-50%) translateY(-150%);
           opacity: 0;
         }
         to {
-          transform: translateX(0);
+          transform: translateX(-50%) translateY(0);
           opacity: 1;
         }
       }
-      @keyframes slideOut {
+      @keyframes dropOut {
         from {
-          transform: translateX(0);
+          transform: translateX(-50%) translateY(0);
           opacity: 1;
         }
         to {
-          transform: translateX(100%);
+          transform: translateX(-50%) translateY(-150%);
           opacity: 0;
         }
       }
@@ -156,8 +139,8 @@
       // Focus vào input khi trang load
       if (welcomeInput) {
         welcomeInput.focus();
-        
-        // Xử lý Enter key
+
+        // Xử lý Enter key (máy quét thường tự gửi Enter sau khi quét)
         welcomeInput.addEventListener("keydown", event => {
           if (event.key === "Enter") {
             event.preventDefault();
@@ -165,7 +148,7 @@
           }
         });
 
-        // Auto search sau khi nhập (debounce)
+        // Auto search cho máy quét không gửi phím Enter (debounce)
         let welcomeTimeout = null;
         welcomeInput.addEventListener("input", () => {
           clearTimeout(welcomeTimeout);
@@ -187,7 +170,43 @@
             }
           }
         });
+
+        // Auto search cho máy quét QR không gửi phím Enter (debounce)
+        let resultTimeout = null;
+        resultInput.addEventListener("input", () => {
+          clearTimeout(resultTimeout);
+          resultTimeout = setTimeout(() => {
+            if (resultInput.value.trim() !== "" && typeof window.searchProduct === 'function') {
+              window.searchProduct();
+            }
+          }, 500);
+        });
       }
+
+      // Bắt phím toàn cục: mọi tín hiệu từ máy quét luôn được đưa vào
+      // ô nhập của trang đang hiển thị, dù focus đang ở đâu
+      document.addEventListener("keydown", event => {
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+        const active = document.activeElement;
+        if (active === welcomeInput || active === resultInput) return;
+
+        const isPrintable = event.key.length === 1;
+        if (!isPrintable && event.key !== "Enter") return;
+
+        const resultVisible = document.getElementById('result-page').style.display !== 'none';
+        const targetInput = resultVisible ? resultInput : welcomeInput;
+        if (targetInput) targetInput.focus();
+      });
+
+      // Nếu focus bị mất (ví dụ sau khi trình duyệt tự động blur), giành lại
+      setInterval(() => {
+        const active = document.activeElement;
+        if (active !== welcomeInput && active !== resultInput) {
+          const resultVisible = document.getElementById('result-page').style.display !== 'none';
+          (resultVisible ? resultInput : welcomeInput).focus();
+        }
+      }, 2000);
     });
 
     // Hàm chuyển đến trang kết quả
@@ -198,12 +217,12 @@
       }
 
       const welcomeProductCode = welcomeInput.value.trim().toUpperCase();
-      
+
       if (welcomeProductCode) {
         resultInput.value = welcomeProductCode;
         document.getElementById('welcome-page').style.display = 'none';
-        document.getElementById('result-page').style.display = 'block';
-        
+        document.getElementById('result-page').style.display = 'flex';
+
         // Focus vào result input và gọi search
         setTimeout(() => {
           resultInput.focus();
@@ -212,7 +231,7 @@
           }
         }, 100);
       } else {
-        showNotification("Vui lòng nhập mã sản phẩm!", 'error');
+        showNotification("Vui lòng quét lại mã sản phẩm!", 'error');
         welcomeInput.focus();
       }
     }

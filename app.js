@@ -4,30 +4,38 @@ let productData = []; // Vẫn khai báo để không lỗi, nhưng KHÔNG DÙNG
 let locationData = [];
 
 console.log('[Main] Khởi tạo Data Parser Worker...');
-const dataParser = new Worker('data_parser.js');
+// Worker chỉ dùng cho dữ liệu nền (không ảnh hưởng tìm kiếm webhook).
+// Bọc try/catch vì khi mở trang bằng file:// trình duyệt sẽ chặn Worker —
+// nếu không bọc, toàn bộ app.js chết và searchProduct không được khởi tạo.
+let dataParser = null;
+try {
+    dataParser = new Worker('data_parser.js');
 
-dataParser.onmessage = function(event) {
-    try {
-        const { type, payload } = event.data;
-        console.log(`✅ [Main] Đã nhận dữ liệu ${type} đã xử lý từ Worker.`);
+    dataParser.onmessage = function(event) {
+        try {
+            const { type, payload } = event.data;
+            console.log(`✅ [Main] Đã nhận dữ liệu ${type} đã xử lý từ Worker.`);
 
-        if (type === 'product') {
-            productData = Array.isArray(payload) ? payload : []; // Vẫn nhận, nhưng không dùng
-        } else if (type === 'location') {
-            locationData = Array.isArray(payload) ? payload : [];
-            console.log(`✅ [Main] Đã cập nhật locationData với ${locationData.length} items`);
+            if (type === 'product') {
+                productData = Array.isArray(payload) ? payload : []; // Vẫn nhận, nhưng không dùng
+            } else if (type === 'location') {
+                locationData = Array.isArray(payload) ? payload : [];
+                console.log(`✅ [Main] Đã cập nhật locationData với ${locationData.length} items`);
+            }
+
+            // Chỉ refresh nếu DOM đã sẵn sàng
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                refreshCurrentSearch();
+            }
+        } catch (err) {
+            console.error('[Main] Lỗi khi xử lý message từ Worker:', err);
         }
-        
-        // Chỉ refresh nếu DOM đã sẵn sàng
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            refreshCurrentSearch();
-        }
-    } catch (err) {
-        console.error('[Main] Lỗi khi xử lý message từ Worker:', err);
-    }
-};
+    };
 
-dataParser.onerror = error => console.error('[Main] Lỗi từ Worker:', error);
+    dataParser.onerror = error => console.error('[Main] Lỗi từ Worker:', error);
+} catch (err) {
+    console.warn('⚠️ [Main] Không thể khởi tạo Worker (trang đang mở qua file:// ?). Tìm kiếm webhook vẫn hoạt động bình thường.', err);
+}
 
 async function fetchDataWithCacheCheck(url, storageKey, dataType) {
     console.log(`⏳ [Main] Đang kiểm tra cập nhật cho: ${storageKey}`);
@@ -45,7 +53,7 @@ async function fetchDataWithCacheCheck(url, storageKey, dataType) {
             const newETag = response.headers.get('ETag');
             const dataText = await response.text();
             if (newETag) localStorage.setItem(`${storageKey}_ETag`, newETag);
-            dataParser.postMessage({ type: dataType, payload: dataText });
+            if (dataParser) dataParser.postMessage({ type: dataType, payload: dataText });
         } else {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -290,6 +298,9 @@ function displayResults(productResults, materialText, productCode, errorMessage 
   const priceEl = document.getElementById('product-price');
   const locationEl = document.getElementById('location-info');
   const sizeListEl = document.getElementById('size-list');
+  const titleEl = document.getElementById('product-title');
+
+  if (titleEl) titleEl.textContent = productCode;
 
   // Kiểm tra elements tồn tại
   if (!imageEl || !priceEl || !locationEl || !sizeListEl) {
@@ -299,14 +310,20 @@ function displayResults(productResults, materialText, productCode, errorMessage 
 
   sizeListEl.innerHTML = '';
 
+  // Ảnh logo (lỗi / không tìm thấy) hiển thị trọn, ảnh sản phẩm phủ kín khung
+  const setImage = src => {
+    imageEl.src = src;
+    imageEl.classList.toggle('logo-mode', src.includes('comap_logo'));
+  };
+
   // Hiển thị lỗi nếu có
   if (errorMessage) {
-    imageEl.src = 'comap_logo.jpg';
+    setImage('comap_logo.jpg');
     priceEl.textContent = 'Lỗi kết nối';
-    priceEl.style.color = '#ef4444';
-    
+    priceEl.style.color = '#ff3b30';
+
     const li = document.createElement('li');
-    li.style.cssText = 'color: #ef4444; text-align: center; padding: 20px; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3);';
+    li.style.cssText = 'color: #ff3b30; text-align: center; padding: 20px; background: rgba(255, 59, 48, 0.08); border: 1px solid rgba(255, 59, 48, 0.3); flex-direction: column;';
     li.innerHTML = `
       <strong>⚠️ Lỗi kết nối webhook</strong><br>
       <small style="font-size: 0.9rem; margin-top: 8px; display: block;">${errorMessage}</small>
@@ -326,16 +343,20 @@ function displayResults(productResults, materialText, productCode, errorMessage 
   priceEl.style.color = '';
 
   if (productResults.length > 0) {
-      imageEl.src = productResults[0].imageUrl || 'comap_logo.jpg';
+      setImage(productResults[0].imageUrl || 'comap_logo.jpg');
       priceEl.textContent = `${productResults[0].price.toLocaleString('vi-VN')} đ`;
+
+      // Đổi tên size hiển thị: XXL -> 2XL, XXXL -> 3XL
+      const sizeLabels = { 'XXL': '2XL', 'XXXL': '3XL' };
+      const formatSize = size => sizeLabels[String(size || '').toUpperCase()] || size;
 
       const availableSizes = productResults.filter(item => item.stock > 0);
       if (availableSizes.length > 0) {
           availableSizes.forEach(item => {
               const li = document.createElement('li');
               li.innerHTML = `
-                <span class="size-info"><strong>${item.size}</strong></span>
-                <span class="stock-info">    <strong>${item.stock}</strong></span>
+                <span class="size-info">${formatSize(item.size)}</span>
+                <span class="stock-info">${item.stock}</span>
               `;
               sizeListEl.appendChild(li);
           });
@@ -346,7 +367,7 @@ function displayResults(productResults, materialText, productCode, errorMessage 
           sizeListEl.appendChild(li);
       }
   } else {
-      imageEl.src = 'comap_logo.jpg';
+      setImage('comap_logo.jpg');
       priceEl.textContent = 'Không có giá';
       const li = document.createElement('li');
       li.textContent = `Không tìm thấy sản phẩm ${productCode}`;
@@ -372,7 +393,7 @@ function refreshCurrentSearch() {
         const resultPage = document.getElementById("result-page");
         if (!resultPage) return;
         
-        const resultPageVisible = resultPage.style.display === "block";
+        const resultPageVisible = resultPage.style.display !== "none";
         if (resultPageVisible) {
             console.log("[Main] Dữ liệu nền đã thay đổi, tự động làm mới kết quả...");
             const inputEl = document.getElementById('productCode');
@@ -425,7 +446,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.warn('[Init] Không tìm thấy backButton');
         }
-        
+
+
         periodicUpdate();
         setInterval(periodicUpdate, 120000);
         
