@@ -175,6 +175,22 @@ window.searchProduct = async function() {
     return;
   }
 
+  const restrictionMessage = window.productCodePolicy
+    ? window.productCodePolicy.getProductCodeRestriction(productCode)
+    : null;
+
+  if (restrictionMessage) {
+    displayResults([], '', productCode, null, restrictionMessage);
+
+    if (typeof showNotification === 'function') {
+      showNotification(restrictionMessage, 'error');
+    }
+
+    inputEl.value = '';
+    inputEl.focus();
+    return;
+  }
+
   // Hiển thị loading
   showLoading(true);
 
@@ -289,7 +305,7 @@ function showLoading(show) {
 
 // --- GIỮ NGUYÊN HOÀN TOÀN HÀM displayResults() ---
 
-function displayResults(productResults, materialText, productCode, errorMessage = null) {
+function displayResults(productResults, materialText, productCode, errorMessage = null, restrictionMessage = null) {
   // Đảm bảo các tham số là hợp lệ
   productResults = Array.isArray(productResults) ? productResults : [];
   productCode = productCode || 'N/A';
@@ -315,6 +331,21 @@ function displayResults(productResults, materialText, productCode, errorMessage 
     imageEl.src = src;
     imageEl.classList.toggle('logo-mode', src.includes('comap_logo'));
   };
+
+  // Hiển thị mã A đã đóng vào bao và không gọi webhook
+  if (restrictionMessage) {
+    setImage('comap_logo.jpg');
+    priceEl.textContent = 'Không thể live';
+    priceEl.style.color = '#ff3b30';
+    locationEl.textContent = 'Không có chất liệu';
+
+    const li = document.createElement('li');
+    li.setAttribute('role', 'status');
+    li.textContent = restrictionMessage;
+    li.style.cssText = 'color: #ff3b30; text-align: center; padding: 20px; background: rgba(255, 59, 48, 0.08); border: 1px solid rgba(255, 59, 48, 0.3);';
+    sizeListEl.appendChild(li);
+    return;
+  }
 
   // Hiển thị lỗi nếu có
   if (errorMessage) {
