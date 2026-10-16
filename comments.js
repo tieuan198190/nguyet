@@ -300,9 +300,10 @@ const COMMENT_SHOW_FULL_PHONE = false; // SĐT đã được n8n che sẵn trư�
     lastShownIds = new Set(shown.map((c) => c.id));
   }
 
+  // Luôn hiện giờ Việt Nam, kể cả khi máy đặt múi giờ khác
   function clock(ts) {
-    const d = new Date(ts * 1000);
-    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    const vn = new Date((ts + 7 * 3600) * 1000);
+    return String(vn.getUTCHours()).padStart(2, '0') + ':' + String(vn.getUTCMinutes()).padStart(2, '0');
   }
 
   // —— Lấy comment từ n8n ——
