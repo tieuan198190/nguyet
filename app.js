@@ -324,10 +324,14 @@ function displayResults(productResults, materialText, productCode, errorMessage 
 
     const li = document.createElement('li');
     li.style.cssText = 'color: #ff3b30; text-align: center; padding: 20px; background: rgba(255, 59, 48, 0.08); border: 1px solid rgba(255, 59, 48, 0.3); flex-direction: column;';
-    li.innerHTML = `
-      <strong>⚠️ Lỗi kết nối webhook</strong><br>
-      <small style="font-size: 0.9rem; margin-top: 8px; display: block;">${errorMessage}</small>
-    `;
+    // Dựng bằng textContent: nội dung lỗi từ server không bao giờ được hiểu là HTML
+    const title = document.createElement('strong');
+    title.textContent = '⚠️ Lỗi kết nối webhook';
+    const detail = document.createElement('small');
+    detail.style.cssText = 'font-size: 0.9rem; margin-top: 8px; display: block;';
+    detail.textContent = errorMessage;
+    li.appendChild(title);
+    li.appendChild(detail);
     sizeListEl.appendChild(li);
     
     // Reset màu sau 3 giây
@@ -354,10 +358,14 @@ function displayResults(productResults, materialText, productCode, errorMessage 
       if (availableSizes.length > 0) {
           availableSizes.forEach(item => {
               const li = document.createElement('li');
-              li.innerHTML = `
-                <span class="size-info">${formatSize(item.size)}</span>
-                <span class="stock-info">${item.stock}</span>
-              `;
+              const sizeInfo = document.createElement('span');
+              sizeInfo.className = 'size-info';
+              sizeInfo.textContent = formatSize(item.size);
+              const stockInfo = document.createElement('span');
+              stockInfo.className = 'stock-info';
+              stockInfo.textContent = String(item.stock);
+              li.appendChild(sizeInfo);
+              li.appendChild(stockInfo);
               sizeListEl.appendChild(li);
           });
       } else {

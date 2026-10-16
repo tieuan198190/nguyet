@@ -1,0 +1,208 @@
+/* ============================================
+   Bình luận livestream trên màn hình quét mã (giữ nguyên bố cục cũ)
+   Trang kết quả: khung bình luận đè lên phần dưới ảnh, mỗi comment là một thẻ trắng mờ
+   Màn chờ: khung bình luận ở đáy màn hình
+   Chỉ 2 màu nhấn: xanh = hỏi đúng mã đang quét, đỏ = khách bom hàng
+   ============================================ */
+
+/* —— Khung bình luận đè lên ảnh —— */
+.live-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Cao vừa đủ cho 3 dòng tóm tắt + 5 comment mới nhất (COMMENT_MAX_VISIBLE), tối đa 80% ảnh */
+  max-height: 80%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  padding: 0 2.4vh 2vh;
+  pointer-events: none;
+  /* Nền tối rất nhẹ ở đáy ảnh để thẻ trắng nổi lên */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+/* Tóm tắt: 3 dòng "N khách hỏi MÃ" cho 3 mã được hỏi gần nhất, nằm trên khung comment */
+.lp-asks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6vh;
+  margin-bottom: 1vh;
+}
+.lp-asks[hidden] { display: none; }
+.lp-ask {
+  padding: 0.6vh 1.8vh;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  font-size: 1.9vh;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.lp-ask b { font-weight: 700; color: var(--blue); }
+/* Mã đang quét: viền xanh */
+.lp-ask.is-current { box-shadow: inset 0 0 0 0.25vh var(--blue), 0 2px 12px rgba(0, 0, 0, 0.08); }
+
+/* Mới nhất ở dưới cùng; comment mới vào thì comment cũ nhất bị đẩy ra */
+.live-feed {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.8vh;
+}
+
+.lc {
+  flex: none;
+  padding: 1vh 1.6vh 1.2vh;
+  border-left: 0.6vh solid transparent;
+  border-radius: 1.4vh;
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+.lc.is-new { animation: fadeInUp 0.35s ease backwards; }
+.lc.is-hit { background: rgba(236, 244, 254, 0.95); border-left-color: var(--blue); }
+.lc.is-bom { border-left-color: var(--red); }
+
+.lc-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4vh 1.2vh;
+  font-size: 1.65vh;
+  line-height: 1.3;
+  color: var(--text-secondary);
+}
+.lc-name { font-weight: 600; }
+
+/* Tag Pancake (đúng màu bên Pancake):
+   Khách Vip, Đã từng mua = chấm màu + chữ
+   Bom Hàng, Không bán nữa, Phải Cọc Full, Cảnh báo = nhãn màu đặc */
+.lc-ptag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6vh;
+  font-weight: 500;
+}
+.lc-ptag::before {
+  content: '';
+  width: 1vh;
+  height: 1vh;
+  border-radius: 50%;
+  background: var(--tag, var(--text-light));
+}
+.lc-ptag.is-warn {
+  padding: 0.1vh 0.9vh;
+  border-radius: 0.6vh;
+  background: var(--tag, var(--red));
+  color: var(--tag-ink, #fff);
+  font-weight: 700;
+}
+.lc-ptag.is-warn::before { display: none; }
+
+.lc-order { font-weight: 700; color: var(--green); }
+.lc-top .lc-phone { font-weight: 600; color: var(--green); font-variant-numeric: tabular-nums; }
+.lc-time { margin-left: auto; color: var(--text-light); font-variant-numeric: tabular-nums; }
+
+.lc-msg {
+  margin-top: 0.2vh;
+  font-size: 2.4vh;
+  line-height: 1.3;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  /* Comment dài thì cắt còn 2 dòng để 5 comment luôn vừa khung */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.lc-msg mark {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.lc-msg .lc-code,
+.lc-msg .lc-size { color: var(--blue); }
+.lc-msg .lc-code.is-current {
+  padding: 0 0.6vh;
+  border-radius: 0.6vh;
+  background: var(--blue);
+  color: #fff;
+}
+.lc-msg .lc-phone { color: var(--green); }
+
+.lc-empty {
+  align-self: flex-start;
+  padding: 1vh 1.6vh;
+  border-radius: 1.4vh;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 1.9vh;
+  color: var(--text-secondary);
+}
+
+/* Màn 16:9 dọc: khoá đúng ảnh 75% trên, thông tin 25% dưới (dù trình duyệt chiếm bớt chiều cao) */
+.live-layout .image-container {
+  flex: 0 0 75%;
+  height: 75%;
+  aspect-ratio: auto;
+}
+.live-layout .info-panel {
+  flex: 0 0 25%;
+  height: 25%;
+  padding-top: 1.8vh;
+  padding-bottom: 1.8vh;
+  gap: 0.8vh;
+}
+/* Chừa chỗ phía trên cho chấm số ở góc ô size */
+.live-layout .size-list { padding-top: 0.9vh; padding-right: 0.9vh; margin-top: 0; }
+.live-layout .size-list li { position: relative; padding: 1vh 2.2vh; }
+
+/* Số khách hỏi theo size: chấm số xanh ở góc ô, không làm ô size rộng thêm */
+.size-demand {
+  position: absolute;
+  top: -0.9vh;
+  right: -0.9vh;
+  min-width: 2.6vh;
+  height: 2.6vh;
+  padding: 0 0.7vh;
+  border-radius: 1.3vh;
+  background: var(--blue);
+  color: #fff;
+  font-size: 1.5vh;
+  font-weight: 700;
+  line-height: 2.6vh;
+  text-align: center;
+  box-shadow: 0 0 0 0.25vh var(--bg);
+}
+
+/* —— Màn chờ: khung bình luận ở đáy, chừa chỗ cho logo và lời nhắc quét —— */
+.welcome-page { position: relative; }
+.live-layout .welcome-page .hero { padding-bottom: 56vh; }
+.live-layout .welcome-page .logo { width: 17vh; margin-bottom: 3vh; }
+.live-layout .welcome-page .scan-indicator { margin-top: 3.5vh; }
+.live-panel.on-welcome {
+  max-height: 58vh;
+  background: none;
+}
+.live-panel.on-welcome .lp-ask,
+.live-panel.on-welcome .lc,
+.live-panel.on-welcome .lc-empty {
+  background: var(--bg-secondary);
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+          backdrop-filter: none;
+}
+.live-panel.on-welcome .lc.is-hit { background: rgba(0, 113, 227, 0.08); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lc.is-new { animation: none; }
+}
