@@ -291,7 +291,6 @@ const COMMENT_SHOW_FULL_PHONE = false; // SĐT đã được n8n che sẵn trư�
       const isNew = !lastShownIds.has(c.id);
       return '<div class="lc' + (hit ? ' is-hit' : '') + (isNew ? ' is-new' : '') + (isBom(c) ? ' is-bom' : '') + '">' +
         '<div class="lc-top"><span class="lc-name">' + esc(c.name) + '</span>' + tagsHtml(c) +
-        (c.ai.order === 1 ? '<span class="lc-order">Chốt</span>' : '') +
         (!c.parsed.phones.length && phone ? '<span class="lc-phone">' + esc(showPhone(phone)) + '</span>' : '') +
         '<span class="lc-time">' + esc(clock(c.ts)) + '</span></div>' +
         '<div class="lc-msg">' + messageHtml(c, code) + '</div>' +

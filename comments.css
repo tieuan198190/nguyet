@@ -107,7 +107,6 @@
 }
 .lc-ptag.is-warn::before { display: none; }
 
-.lc-order { font-weight: 700; color: var(--green); }
 .lc-top .lc-phone { font-weight: 600; color: var(--green); font-variant-numeric: tabular-nums; }
 .lc-time { margin-left: auto; color: var(--text-light); font-variant-numeric: tabular-nums; }
 
