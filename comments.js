@@ -8,6 +8,7 @@ const COMMENT_API_URL = 'https://vmi3164630.contaboserver.net/webhook/so-chot-do
 const COMMENT_API_KEY = 'ea173f757e798cfb316a0a08cd5ccaad'; // giống KEY trong node "Kiểm tra key" (n8n chỉ trả dữ liệu cho tieuan198190.github.io)
 const COMMENT_POLL_SECONDS = 3;   // bao lâu lấy comment mới một lần
 const COMMENT_MAX_VISIBLE = 5;    // số comment gần nhất hiện trên màn
+const COMMENT_MAX_AGE_MINUTES = 30; // comment cũ hơn chừng này phút tự biến mất (cả số "khách hỏi" cũng chỉ tính trong khoảng này)
 const COMMENT_SHOW_FULL_PHONE = false; // SĐT đã được n8n che sẵn trước khi gửi về trang, nên luôn hiện dạng 0901 ••• 513
 
 (function () {
@@ -236,7 +237,10 @@ const COMMENT_SHOW_FULL_PHONE = false; // SĐT đã được n8n che sẵn trư�
   function render() {
     placeElements();
     const code = currentProductCode();
-    const all = [...comments.values()].filter((c) => !isShop(c) && c.verb !== 'remove').sort((a, b) => a.ts - b.ts || (a.id < b.id ? -1 : 1));
+    const oldest = Math.floor(Date.now() / 1000) - COMMENT_MAX_AGE_MINUTES * 60;
+    const all = [...comments.values()]
+      .filter((c) => !isShop(c) && c.verb !== 'remove' && c.ts >= oldest)
+      .sort((a, b) => a.ts - b.ts || (a.id < b.id ? -1 : 1));
     const post = activePost([...all].reverse());
     const live = all.filter((c) => c.post === post);
 
@@ -281,7 +285,7 @@ const COMMENT_SHOW_FULL_PHONE = false; // SĐT đã được n8n che sẵn trư�
     // Danh sách comment: mới nhất ở dưới cùng, như khung chat livestream
     const shown = live.slice(-COMMENT_MAX_VISIBLE);
     if (!shown.length) {
-      feed.innerHTML = '<div class="lc-empty">' + (connected || DEMO ? 'Chưa có bình luận mới trên bài live' : 'Đang kết nối tới bình luận…') + '</div>';
+      feed.innerHTML = '<div class="lc-empty">' + (connected || DEMO ? 'Chưa có bình luận mới trong ' + COMMENT_MAX_AGE_MINUTES + ' phút qua' : 'Đang kết nối tới bình luận…') + '</div>';
       lastShownIds = new Set();
       return;
     }
@@ -382,6 +386,8 @@ const COMMENT_SHOW_FULL_PHONE = false; // SĐT đã được n8n che sẵn trư�
     }
     render();
     if (DEMO) startDemo(); else poll();
+    // Vẽ lại mỗi 30 giây để comment quá hạn tự biến mất, kể cả khi không có comment mới
+    setInterval(render, 30000);
   }
 
   const safeInit = () => { try { init(); } catch (err) { console.warn('[Comment] Không khởi động được khung comment:', err); } };
